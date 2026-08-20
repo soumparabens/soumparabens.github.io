@@ -9249,7 +9249,7 @@ window._renderUltimaSync = function(){
   try{
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
-    var ver='v20/08-c11';
+    var ver='v20/08-c13';
     var txt;
     if(!t){ txt=ver+' · <span class=ic-nuvem></span> sem sync ainda'; }
     else{
@@ -12019,50 +12019,84 @@ function _pedidosDoDia(dataISO, statusFiltro){
 }
 window._pedidosDoDia = _pedidosDoDia;
 
-/* painel de seleção no topo do Controle de pedidos */
+/* O painel comia metade da tela do Controle de pedidos. Virou um botão
+   discreto no cabeçalho, que abre o mesmo painel numa janela. O quadro
+   de etapas fica com a tela inteira. */
 function montarPainelComandas(){
   var tela = document.getElementById('screen-kanban');
-  if(!tela || document.getElementById('painel-comandas')) return;
-  var board = document.getElementById('kanban-board');
-  if(!board) return;
+  if(!tela) return;
 
+  // botão no cabeçalho da tela
+  if(!document.getElementById('btn-abrir-comandas')){
+    var cab = tela.querySelector('.page-header');
+    if(cab){
+      cab.style.display = 'flex';
+      cab.style.alignItems = 'center';
+      cab.style.justifyContent = 'space-between';
+      cab.style.gap = '10px';
+      var b = document.createElement('button');
+      b.id = 'btn-abrir-comandas';
+      b.type = 'button';
+      b.onclick = abrirComandas;
+      b.style.cssText = 'flex-shrink:0;display:flex;align-items:center;gap:7px;background:var(--brown);'+
+        'color:#fff;border:none;border-radius:11px;padding:9px 15px;font-size:12px;'+
+        'font-weight:700;cursor:pointer;white-space:nowrap';
+      b.innerHTML = '<span class=ic-imprimir></span> Comandas';
+      b.title = 'Imprimir as comandas de produção do dia';
+      cab.appendChild(b);
+    }
+  }
+
+  // a janela, montada uma vez e reaproveitada
+  if(document.getElementById('modal-comandas')) return;
   var hoje = (new Date()).toISOString().slice(0,10);
-  var div = document.createElement('div');
-  div.id = 'painel-comandas';
-  div.style.cssText = 'background:#FEF5E7;border:1.5px solid #EBDBC0;border-radius:14px;'+
-                      'padding:12px 14px;margin:0 16px 14px';
-  div.innerHTML =
-    '<div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:#7E634E;margin-bottom:9px">'+
-      '<span class=ic-prancheta></span> IMPRIMIR COMANDAS'+
-    '</div>'+
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'+
-      '<div style="flex:1;min-width:130px">'+
-        '<label style="font-size:9.5px;color:#A08869;font-weight:700;display:block;margin-bottom:2px">ENTREGA EM</label>'+
-        '<input type="date" id="cmd-data" class="form-input" value="'+hoje+'" style="font-size:12.5px;padding:8px" onchange="_recarregarComandas()">'+
+  var m = document.createElement('div');
+  m.className = 'modal-overlay';
+  m.id = 'modal-comandas';
+  m.innerHTML =
+    '<div class="modal">'+
+      '<div class="modal-handle"></div>'+
+      '<div class="modal-title"><span class=ic-prancheta></span> Imprimir comandas</div>'+
+      '<div class="modal-body">'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'+
+          '<div style="flex:1;min-width:130px">'+
+            '<label style="font-size:9.5px;color:var(--gray-d);font-weight:700;display:block;margin-bottom:2px">ENTREGA EM</label>'+
+            '<input type="date" id="cmd-data" class="form-input" value="'+hoje+'" style="font-size:12.5px;padding:8px" onchange="_recarregarComandas()">'+
+          '</div>'+
+          '<div style="flex:1;min-width:130px">'+
+            '<label style="font-size:9.5px;color:var(--gray-d);font-weight:700;display:block;margin-bottom:2px">ETAPA</label>'+
+            '<select id="cmd-status" class="form-select" style="font-size:12.5px;padding:8px" onchange="_recarregarComandas()">'+
+              '<option value="__todos__">Todas as etapas</option>'+
+              '<option value="Novo">Pendente</option>'+
+              '<option value="Em andamento">Em produção</option>'+
+              '<option value="Pronto">Arte pronta</option>'+
+            '</select>'+
+          '</div>'+
+        '</div>'+
+        '<div id="cmd-lista" style="margin-top:12px"></div>'+
+        '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
+          '<button type="button" onclick="_marcarTodasComandas()" class="btn btn-sm" style="flex:1;min-width:120px;background:#fff;color:var(--brown);border:1.5px solid var(--gold);font-weight:700">'+
+            '<span class=ic-check></span> Marcar todas</button>'+
+          '<button type="button" onclick="imprimirComandasSelecionadas()" class="btn btn-sm" style="flex:2;min-width:150px;background:var(--brown);color:#fff;border:none;font-weight:800">'+
+            '<span class=ic-imprimir></span> Imprimir selecionadas</button>'+
+        '</div>'+
+        '<div style="font-size:10px;color:var(--gray-d);margin-top:9px;line-height:1.5">'+
+          'Saem <b>2 comandas por folha</b>. Cada uma tem cliente, endereço, itens, materiais e o quadro de conferência.'+
+        '</div>'+
       '</div>'+
-      '<div style="flex:1;min-width:130px">'+
-        '<label style="font-size:9.5px;color:#A08869;font-weight:700;display:block;margin-bottom:2px">ETAPA</label>'+
-        '<select id="cmd-status" class="form-select" style="font-size:12.5px;padding:8px" onchange="_recarregarComandas()">'+
-          '<option value="__todos__">Todas as etapas</option>'+
-          '<option value="Novo">Pendente</option>'+
-          '<option value="Em andamento">Em produção</option>'+
-          '<option value="Pronto">Arte pronta</option>'+
-        '</select>'+
+      '<div class="modal-footer">'+
+        '<button class="btn btn-outline" onclick="closeModal(\'modal-comandas\')">Fechar</button>'+
       '</div>'+
-    '</div>'+
-    '<div id="cmd-lista" style="margin-top:10px"></div>'+
-    '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">'+
-      '<button type="button" onclick="_marcarTodasComandas()" class="btn btn-sm" style="flex:1;min-width:120px;background:#fff;color:#7E634E;border:1.5px solid #D3A560;font-weight:700">'+
-        '<span class=ic-check></span> Marcar todas</button>'+
-      '<button type="button" onclick="imprimirComandasSelecionadas()" class="btn btn-sm" style="flex:2;min-width:150px;background:#7E634E;color:#fff;border:none;font-weight:800">'+
-        '<span class=ic-imprimir></span> Imprimir selecionadas</button>'+
-    '</div>'+
-    '<div style="font-size:10px;color:#A08869;margin-top:7px;line-height:1.5">'+
-      'Saem <b>2 comandas por folha</b>. Cada uma tem cliente, endereço, itens, materiais e o quadro de conferência.'+
     '</div>';
-  board.parentNode.insertBefore(div, board);
-  recarregarComandas();
+  document.body.appendChild(m);
 }
+
+window.abrirComandas = function(){
+  montarPainelComandas();
+  if(typeof openModal === 'function') openModal('modal-comandas', false);
+  else { var m=document.getElementById('modal-comandas'); if(m) m.classList.add('open'); }
+  setTimeout(recarregarComandas, 60);
+};
 
 function recarregarComandas(){
   var el = document.getElementById('cmd-lista');
@@ -12072,17 +12106,17 @@ function recarregarComandas(){
   var lista = _pedidosDoDia(data, st);
 
   if(!lista.length){
-    el.innerHTML = '<div style="font-size:11.5px;color:#A08869;padding:8px 0">'+
+    el.innerHTML = '<div style="font-size:11.5px;color:var(--gray-d);padding:10px 0">'+
       'Nenhum pedido com entrega nessa data.</div>';
     return;
   }
-  el.innerHTML = '<div style="max-height:190px;overflow-y:auto;background:#fff;border-radius:9px;padding:4px 6px">'+
+  el.innerHTML = '<div style="max-height:240px;overflow-y:auto;background:#fff;border:1px solid var(--gray-l);border-radius:9px;padding:4px 6px">'+
     lista.map(function(p){
-      return '<label style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid #F5EEE2;cursor:pointer">'+
-        '<input type="checkbox" class="cmd-sel" data-id="'+p.id+'" checked style="width:16px;height:16px;accent-color:#7E634E">'+
+      return '<label style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #F5EEE2;cursor:pointer">'+
+        '<input type="checkbox" class="cmd-sel" data-id="'+p.id+'" checked style="width:16px;height:16px;accent-color:var(--brown)">'+
         '<span style="flex:1;font-size:12px;color:#4A3B31;font-weight:600">'+
           String(p.cliente||'(sem nome)').replace(/</g,'&lt;')+
-          '<span style="display:block;font-size:10px;color:#A08869;font-weight:400">'+
+          '<span style="display:block;font-size:10px;color:var(--gray-d);font-weight:400">'+
             String(p.produto||'').replace(/</g,'&lt;')+' · '+String(p.status||'')+'</span>'+
         '</span></label>';
     }).join('') + '</div>';
@@ -12115,7 +12149,7 @@ var _navOrig13 = window.navigate;
 if(typeof _navOrig13 === 'function'){
   window.navigate = function(tela){
     var r = _navOrig13.apply(this, arguments);
-    if(tela === 'kanban') setTimeout(function(){ montarPainelComandas(); recarregarComandas(); }, 70);
+    if(tela === 'kanban') setTimeout(montarPainelComandas, 70);
     return r;
   };
 }
@@ -12732,17 +12766,25 @@ window._itemForn = _item;
 /* ── enterra um id para que a exclusão valha nos outros aparelhos ── */
 function _enterrar(ids){
   try {
-    var tb = JSON.parse(localStorage.getItem('sp_tumbas')||'[]');
     var agora = Date.now();
+    var tb = JSON.parse(localStorage.getItem('sp_tumbas')||'[]');
     ids.forEach(function(id){ tb.push({id:id, ts:agora}); });
     localStorage.setItem('sp_tumbas', JSON.stringify(tb));
+    /* e na lista que está na memória — foi o que faltou da primeira vez:
+       a mesclagem lê a variável, não o disco, então a nuvem devolvia
+       as cópias no ciclo seguinte como se nada tivesse sido excluído. */
+    if(typeof tumbas !== 'undefined' && Array.isArray(tumbas)){
+      ids.forEach(function(id){ tumbas.push({id:id, ts:agora}); });
+    }
   } catch(e){}
 }
 
 /* ══ 1 · junta os repetidos e recolhe os "(ML)" ═══════════════════ */
 function arrumarFornecedores(){
   try {
-    if(localStorage.getItem('sp_forn_arrumado_v1')) return 0;
+    /* Sem trava de "roda uma vez": enquanto QUALQUER aparelho ainda tiver
+       as cópias, elas voltam pela nuvem. Então isto roda ao abrir e depois
+       de cada mesclagem. Não tendo o que arrumar, não escreve nada. */
     if(typeof fornecedores === 'undefined' || !Array.isArray(fornecedores)) return 0;
 
     var agora = Date.now(), enterrar = [], mexeu = 0;
@@ -12830,8 +12872,7 @@ function arrumarFornecedores(){
       localStorage.setItem('sp_dirty','1');
       console.log('[Fornecedores] '+mexeu+' linha(s) repetida(s) ou fora de lugar arrumada(s)');
     }
-    localStorage.setItem('sp_forn_arrumado_v1','1');
-    if(typeof renderFornecedores === 'function'){ try{ renderFornecedores(); }catch(e){} }
+    if(mexeu && typeof renderFornecedores === 'function'){ try{ renderFornecedores(); }catch(e){} }
     return mexeu;
   } catch(e){ console.warn('[Fornecedores] arrumação:', e && e.message); return 0; }
 }
@@ -12840,7 +12881,6 @@ window._arrumarFornecedores = arrumarFornecedores;
 /* mesma coisa para os bens: o seed também gerava id aleatório */
 function arrumarAtivos(){
   try {
-    if(localStorage.getItem('sp_ativos_arrumado_v1')) return 0;
     if(typeof ativos === 'undefined' || !Array.isArray(ativos)) return 0;
     var vistos = {}, fica = [], enterrar = [];
     ativos.forEach(function(a){
@@ -12856,7 +12896,6 @@ function arrumarAtivos(){
       localStorage.setItem('sp_dirty','1');
       console.log('[Bens] '+enterrar.length+' repetido(s) removido(s)');
     }
-    localStorage.setItem('sp_ativos_arrumado_v1','1');
     return enterrar.length;
   } catch(e){ return 0; }
 }
@@ -12992,6 +13031,17 @@ function arrumarKraft(){
   } catch(e){ return 0; }
 }
 window._arrumarKraft = arrumarKraft;
+
+/* depois de toda mesclagem com a nuvem, arruma de novo: é o momento
+   em que as cópias de outro aparelho chegam aqui. */
+if(typeof window._mesclarNuvem === 'function'){
+  var _mescOrig = window._mesclarNuvem;
+  window._mesclarNuvem = function(d){
+    var r = _mescOrig.apply(this, arguments);
+    try { arrumarFornecedores(); arrumarAtivos(); } catch(e){}
+    return r;
+  };
+}
 
 function iniciar17(){
   arrumarFornecedores();
