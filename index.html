@@ -938,7 +938,7 @@ function _mudarFiltroMes(val){
     <div class="header-logo"><div style="width:42px;height:42px;background:var(--simbolo) center/contain no-repeat"></div></div>
     <div class="header-info">
       <div class="header-title">Só um Parabéns</div>
-      <div class="header-sub">Balões & Personalizados</div>
+      <div class="header-sub">Presentes Personalizados</div>
       <div class="header-sub ultima-sync" style="font-size:9px;opacity:0.7;margin-top:1px">—</div>
     </div>
     <div class="header-actions" style="gap:4px">
@@ -2898,7 +2898,7 @@ function enviarLembreteWhatsApp(id) {
     '',
     'Confirma? \u{1F60A}',
     '',
-    '_Só um Parabéns — Balões & Personalizados_ \u{1F388}',
+    '_Só um Parabéns — Presentes Personalizados_ \u{1F388}',
   ].filter(function(l){ return l !== null; }).join('\n');
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(partes).then(function() {
@@ -5513,7 +5513,7 @@ async function gerarImagemRecibo(id) {
     const LX=cx+18, RX=cx+cw-18, CX=cx+cw/2;
 
     ctx.font='bold 13px Nunito,sans-serif'; ctx.fillStyle=BROWN; ctx.textAlign='center';
-    ctx.fillText('CONFIRMAÇÃO DE PEDIDO',CX,y); y+=14;
+    ctx.fillText('RECIBO',CX,y); y+=14;
 
     const dg=ctx.createLinearGradient(LX,0,RX,0);
     dg.addColorStop(0,CYAN); dg.addColorStop(0.5,PINK); dg.addColorStop(1,YELLOW);
@@ -5550,7 +5550,7 @@ async function gerarImagemRecibo(id) {
       if(line){ctx.fillText(line,LX+6,y);y+=20;}
     }
     { divider(); section('<span class=ic-aviso></span> IMPORTANTE', '#E67E22');
-      const _aviso='Confira com atenção todos os detalhes acima (descrição, data e valores). Após o produto finalizado, não nos responsabilizamos por erros que não tenham sido apontados nesta confirmação.';
+      const _aviso='Confira com atenção todos os detalhes acima (descrição, data e valores). Após o produto finalizado, não nos responsabilizamos por erros que não tenham sido apontados neste recibo.';
       const mw=RX-LX-6; ctx.font='400 11px Nunito,sans-serif'; ctx.fillStyle='#666'; ctx.textAlign='left';
       const words=_aviso.split(' '); let line='';
       words.forEach(w=>{ const t=(line?line+' ':'')+w; if(ctx.measureText(t).width>mw&&line){ctx.fillText(line,LX+6,y);y+=18;line=w;}else{line=t;} });
@@ -5558,7 +5558,7 @@ async function gerarImagemRecibo(id) {
     }
     y+=10; divider();
     ctx.font='italic 11px Mali,cursive'; ctx.fillStyle='#888'; ctx.textAlign='center';
-    ctx.fillText('<span class=ic-estrela></span> Transformando Momentos em Memórias',CX,y); y+=18;
+    ctx.fillText('Transformando Momentos em Memórias',CX,y); y+=18;
     ctx.font='400 10px Nunito,sans-serif'; ctx.fillStyle='#aaa'; ctx.textAlign='center';
     ctx.fillText('CNPJ: 59.844.727/0001-06',CX,y); y+=16;
     ctx.font='400 10px Nunito,sans-serif'; ctx.fillStyle='#aaa'; ctx.textAlign='center';
@@ -5598,7 +5598,7 @@ async function gerarImagemRecibo(id) {
   } else {
     // Fallback texto
     ctx.font='bold 40px Mali,cursive'; ctx.fillStyle=PINK; ctx.textAlign='center'; ctx.fillText('Só um Parabéns',W/2,90);
-    ctx.font='400 13px Nunito,sans-serif'; ctx.fillStyle=CYAN; ctx.fillText('Balões & Personalizados',W/2,115);
+    ctx.font='400 13px Nunito,sans-serif'; ctx.fillStyle=CYAN; ctx.fillText('Presentes Personalizados',W/2,115);
     drawCard();
   }
 }
@@ -5659,8 +5659,8 @@ function enviarReciboWhatsApp(id) {
   }
 
   const linhas = [
-    '🎈 *CONFIRMAÇÃO DE PEDIDO*',
-    '_Só um Parabéns — Balões & Personalizados_',
+    '🎈 *RECIBO*',
+    '_Só um Parabéns — Presentes Personalizados_',
     sep,
     '👤 *Cliente:* ' + (p.cliente || '—'),
     p.whats ? ('📱 *WhatsApp:* ' + p.whats) : '',
@@ -5678,7 +5678,7 @@ function enviarReciboWhatsApp(id) {
     p.obs ? ('📝 *Obs:* ' + p.obs) : '',
     p.obs ? sep : '',
     '✨ _Transformando Momentos em Memórias_',
-    '🎈 _Só um Parabéns — Balões & Personalizados_'
+    '🎈 _Só um Parabéns — Presentes Personalizados_'
   ].filter(l => l !== '').join('\n');
 
   // Copia para área de transferência (emojis ficam corretos ao colar no WhatsApp Web)
@@ -5775,7 +5775,7 @@ function gerarRecibo(id) {
   <div class="header">
     <div class="logo"><span class=ic-balao></span></div>
     <div class="marca">Só um Parabéns</div>
-    <div class="marca-sub">Balões & Personalizados</div>
+    <div class="marca-sub">Presentes Personalizados</div>
     <div class="badge-pago"><span class=ic-documento></span> RECIBO DE PEDIDO</div>
   </div>
 
@@ -5838,7 +5838,7 @@ function gerarRecibo(id) {
 
   <div class="footer">
     <div class="footer-obrigada">Obrigada pela preferência!</div>
-    <div class="footer-sub">Só um Parabéns — Balões & Personalizados</div>
+    <div class="footer-sub">Só um Parabéns — Presentes Personalizados</div>
     <div class="emissao">Emitido em ${emitido} às ${hora}</div>
   </div>
 
@@ -6306,7 +6306,7 @@ function exportarListaPDF() {
   </thead>
   <tbody>${linhas}</tbody>
 </table>
-<div class="footer">Só um Parabéns — Balões & Personalizados · gerado pelo app</div>
+<div class="footer">Só um Parabéns — Presentes Personalizados · gerado pelo app</div>
 </body></html>`;
 
   const win = window.open('', '_blank', 'width=700,height=600');
@@ -7981,7 +7981,7 @@ async function _gerarCatalogoPDF(){
     doc.setFont('helvetica','bold'); doc.setTextColor(194,24,91); doc.setFontSize(30);
     doc.text('CATÁLOGO', PW/2, Math.round(PH*0.42)-9, {align:'center'});
     doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120); doc.setFontSize(10);
-    doc.text('Só um Parabéns · Balões & Personalizados', PW/2, Math.round(PH*0.42)+12, {align:'center'});
+    doc.text('Só um Parabéns · Presentes Personalizados', PW/2, Math.round(PH*0.42)+12, {align:'center'});
     doc.text(wpp+'  ·  '+insta, PW/2, Math.round(PH*0.42)+18, {align:'center'});
     // ---- PRODUTOS ----
     doc.addPage(); var y=M; var cardH=58, imgS=46;
@@ -9249,7 +9249,7 @@ window._renderUltimaSync = function(){
   try{
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
-    var ver='v20/08-c13';
+    var ver='v20/08-c15';
     var txt;
     if(!t){ txt=ver+' · <span class=ic-nuvem></span> sem sync ainda'; }
     else{
@@ -10612,7 +10612,7 @@ function _fichaRecibo(p){
   var pgto  = p.pgto || '';
   if(p.parcelas) pgto += ' em ' + p.parcelas + 'x de ' + _rs((p.valor||0)/p.parcelas);
   return '<div class="ficha">'+
-    _cabecalho(p, 'CONFIRMAÇÃO DE PEDIDO')+
+    _cabecalho(p, 'RECIBO')+
     _dadosCliente(p, true)+
     '<div class="linha">'+
       '<div class="campo"><div class="rot">Evento</div><div class="val">'+_esc2(p.produto||'')+'</div></div>'+
@@ -10627,7 +10627,7 @@ function _fichaRecibo(p){
     '</div>'+
     (p.obs ? '<div class="obs"><div class="rot">Personalização / Observações</div>'+_esc2(p.obs)+'</div>' : '')+
     '<div class="aviso">Confira com atenção todos os detalhes acima — nomes, datas e valores. '+
-      'Após o produto finalizado, não nos responsabilizamos por erros que não tenham sido apontados nesta confirmação.</div>'+
+      'Após o produto finalizado, não nos responsabilizamos por erros que não tenham sido apontados neste recibo.</div>'+
     '<div class="pe"><span>CNPJ '+EMPRESA.cnpj+' · '+EMPRESA.cidade+'</span><span>'+EMPRESA.fone+' · '+EMPRESA.insta+'</span></div>'+
   '</div>';
 }
@@ -12209,7 +12209,7 @@ window.navigate = function(tela){
 
 var AVISO = 'Confira com atenção todos os detalhes acima — nomes, datas e valores. ' +
             'Após o produto finalizado, não nos responsabilizamos por erros que não ' +
-            'tenham sido apontados nesta confirmação.';
+            'tenham sido apontados neste recibo.';
 
 /* monta o texto do recibo (o mesmo que vai pro WhatsApp) */
 function _textoRecibo(p){
@@ -12237,7 +12237,7 @@ function _textoRecibo(p){
   var resta = (p.valor||0) - (p.sinal||0);
 
   return [
-    '🎈 *CONFIRMAÇÃO DE PEDIDO*',
+    '🎈 *RECIBO*',
     '_Só um Parabéns — Presentes Personalizados_',
     sep,
     '👤 *Cliente:* ' + (p.cliente || '—'),
@@ -12292,10 +12292,12 @@ window.imprimirRecibo = function(id){
     '<title>Recibo — '+String(p.cliente||'')+'</title><style>'+css+'</style></head><body>'+
     '<div class="noprint">'+
       '<button onclick="window.print()">Imprimir</button>'+
+      '<button class="sec" onclick="_enviarImagemDaqui(this)">Enviar como imagem</button>'+
       '<button class="sec" onclick="_copiarRecibo(this)">Copiar texto</button>'+
       (wpp ? '<a class="btnwpp" href="'+linkWpp+'" target="_blank" rel="noopener">Enviar no WhatsApp</a>' : '')+
       '<button class="sec" onclick="window.close()">Fechar</button>'+
       '<div style="font-size:11px;color:#A08869;margin-top:8px">'+
+        '<b>Enviar como imagem</b> gera a arte do recibo (a janela do app precisa continuar aberta).<br>'+
         'No computador, <b>Copiar texto</b> e colar no WhatsApp Web. No celular, <b>Enviar no WhatsApp</b> abre a conversa.'+
       '</div>'+
     '</div>'+
@@ -12303,6 +12305,14 @@ window.imprimirRecibo = function(id){
     '<textarea id="txtrec" readonly>'+String(texto).replace(/</g,'&lt;')+'</textarea>'+
     '<scr'+'ipt>'+
     'var _txt=' + JSON.stringify(texto) + ';'+
+    'var _pid=' + JSON.stringify(pid) + ';'+
+    /* o popup não tem o app dentro dele: pede para a janela que o abriu gerar a arte */
+    'function _enviarImagemDaqui(b){'+
+    ' if(!window.opener || !window.opener.gerarImagemRecibo){'+
+    '   alert("Deixe a tela do app aberta para gerar a imagem."); return; }'+
+    ' var o=b.textContent; b.textContent="Gerando..."; b.disabled=true;'+
+    ' try{ window.opener.gerarImagemRecibo(_pid); window.opener.focus(); }catch(e){}'+
+    ' setTimeout(function(){ b.textContent=o; b.disabled=false; }, 2500); }'+
     'function _copiarRecibo(b){'+
     ' var o=b.textContent;'+
     ' function ok(){ b.textContent="Copiado!"; setTimeout(function(){b.textContent=o;},1800); }'+
@@ -13055,6 +13065,244 @@ else setTimeout(iniciar17, 1500);
 })();
 </script>
 
+
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   LIMPEZA DO ESTOQUE — 20/08
+
+   O estoque tinha 250 itens porque foi montado lendo as descrições do
+   catálogo. Vieram três tipos de sujeira:
+
+   · o mesmo material escrito de vários jeitos ("Body", "Body para
+     personalizar", "body personalizado", "bodys personalizados")
+   · produto de venda no lugar de material (arranjo de balão, tag)
+   · pedaço de frase que virou item ("de bala", "[object Object]")
+
+   JUNTAR troca o nome também dentro dos kits e dos pedidos — senão o
+   kit perde o vínculo com o material e o preço central para de valer.
+   REMOVER tira só do estoque; a composição do kit continua citando o
+   nome, então nada some da receita do produto.
+
+   As duas listas abaixo foram conferidas uma a uma antes de entrar.
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+var _ESTOQUE_REMOVER = [
+  "[object Object]",
+  "a tag personalizada",
+  "arranjo de balão 40cm",
+  "azulejo 20x20cm Após a compra",
+  "baldinho personalizado",
+  "balão personalizado",
+  "café um bilhete impresso",
+  "caixa com 4 ferreiros",
+  "caixa mdf tenho uma surpresa",
+  "caixa mdf um bilhete impresso",
+  "caixa personalizada mdf 10x10 acompanha convite",
+  "canecas alça coração uma caixa craft",
+  "colher um bilhete impresso",
+  "de amendoim",
+  "de bala",
+  "de bala 20gr",
+  "de bala fini",
+  "de biscoito doce",
+  "de biscoito salgado",
+  "de bombom ferreiro com 3 unidades",
+  "de chocolate 40g",
+  "de chocolate 40gr",
+  "de chocolate stikadinho",
+  "de disquete",
+  "de mms",
+  "de nutella",
+  "de ruffles",
+  "de salgadinho",
+  "de trento",
+  "definimos por watts a personalização",
+  "outro branco tubete",
+  "tag de dia dos professores",
+  "toalha personalizada"
+];
+
+var _ESTOQUE_JUNTAR = {
+  "xícaras": "xícara",
+  "xicaras personalizadas": "xícara",
+  "xícara personalizada": "xícara",
+  "caixa personalizada mdf": "caixa mdf",
+  "convite impresso": "convite",
+  "c pires": "pires",
+  "canecas com tampa de bambu": "caneca com tampa de bambu",
+  "porta retrato perso": "porta retrato",
+  "velas no vidro": "vela no vidro",
+  "canecas alça coração": "caneca alça coração",
+  "caneca alça coração personalizada": "caneca alça coração",
+  "velas urso": "vela urso",
+  "cervejas coronas": "cerveja corona",
+  "velas vidro": "vela no vidro",
+  "body personalizado": "Body",
+  "bodys personalizados": "Body",
+  "Body para personalizar": "Body",
+  "monóculos": "monóculo",
+  "monóculo personalizado": "monóculo",
+  "bilhete impresso": "bilhete",
+  "barrinhas de nutella": "barrinha de nutella",
+  "mino espumante": "mini espumante",
+  "bolinhos": "bolinho",
+  "canecas": "caneca",
+  "caneca personalizada": "caneca",
+  "canecas com colher": "caneca com colher",
+  "tampas de bambu": "tampa de bambu",
+  "canecas alça branca": "caneca alça branca",
+  "coador inidividual": "coador individual",
+  "xícaras com pires": "xícara com pires",
+  "fotos polaroide": "foto polaroide",
+  "fotos polaroide impressa": "foto polaroide",
+  "fotos impressa polaridade": "foto polaroide",
+  "caixa personalizada acartonada P": "caixa acartonada P",
+  "canecas cerveja em vidro": "caneca cerveja em vidro",
+  "pacotes de trento": "pacote de trento",
+  "cervejas coronita": "coronita",
+  "pacotes de biscoito salgado": "pacote de biscoito salgado",
+  "vela vidro": "vela no vidro",
+  "vela aromáticano vidro 30gr": "vela aromática em vidro",
+  "velas aromáticas no vidro 30gr": "vela aromática em vidro"
+};
+
+function _n(s){
+  return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+}
+
+/* mapas por nome normalizado, para não depender de acento nem maiúscula */
+var _rem = {}, _jun = {};
+_ESTOQUE_REMOVER.forEach(function(n){ _rem[_n(n)] = 1; });
+for(var k in _ESTOQUE_JUNTAR) _jun[_n(k)] = _ESTOQUE_JUNTAR[k];
+
+function limparEstoque(){
+  var r = {removidos:0, juntados:0, kits:0, pedidos:0};
+  try {
+    if(localStorage.getItem('sp_estoque_limpo_v1')) return r;
+    if(typeof estoque === 'undefined' || !Array.isArray(estoque)) return r;
+
+    var agora = Date.now(), enterrar = [];
+
+    /* ── 1) junta os repetidos, somando o que a Laura já tinha lançado ── */
+    var porNome = {};
+    estoque.forEach(function(e){ if(e && e.nome) porNome[_n(e.nome)] = e; });
+
+    estoque.forEach(function(e){
+      if(!e || !e.nome) return;
+      var destino = _jun[_n(e.nome)];
+      if(!destino) return;
+      var alvo = porNome[_n(destino)];
+      if(!alvo || alvo === e) return;
+
+      alvo.qtd = (Number(alvo.qtd)||0) + (Number(e.qtd)||0);
+      alvo.min = Math.max(Number(alvo.min)||0, Number(e.min)||0);
+      // preço: vale o carimbo mais recente (mesma regra do preço central)
+      if((Number(e.preco)||0) > 0 && (e.precoEm||0) > (alvo.precoEm||0)){
+        alvo.preco = e.preco; alvo.precoEm = e.precoEm; alvo.precoFonte = e.precoFonte;
+      } else if(!(Number(alvo.preco)||0) && (Number(e.preco)||0)){
+        alvo.preco = e.preco;
+      }
+      if(!alvo.forn && e.forn) alvo.forn = e.forn;
+      if(!alvo.obs && e.obs)   alvo.obs  = e.obs;
+      alvo.updatedAt = agora;
+      enterrar.push(e.id);
+      r.juntados++;
+    });
+
+    /* ── 2) tira o que não é material ── */
+    estoque.forEach(function(e){
+      if(e && e.nome && _rem[_n(e.nome)]){ enterrar.push(e.id); r.removidos++; }
+    });
+
+    var fora = {};
+    enterrar.forEach(function(id){ fora[id] = 1; });
+    var sobrou = estoque.filter(function(e){ return e && !fora[e.id]; });
+    estoque.length = 0;
+    sobrou.forEach(function(e){ estoque.push(e); });
+
+    /* ── 3) os kits e os pedidos passam a citar o nome que ficou ── */
+    function trocarEm(lista, campo){
+      var n = 0;
+      (lista||[]).forEach(function(x){
+        var mats = x && x[campo];
+        if(!Array.isArray(mats)) return;
+        var mudou = false;
+        mats.forEach(function(m){
+          if(!m || !m.nome) return;
+          var novo = _jun[_n(m.nome)];
+          if(novo && novo !== m.nome){ m.nome = novo; mudou = true; }
+        });
+        if(mudou){ x.updatedAt = agora; n++; }
+      });
+      return n;
+    }
+    r.kits    = trocarEm(typeof catalogo !== 'undefined' ? catalogo : [], 'materiais');
+    r.pedidos = trocarEm(typeof pedidos  !== 'undefined' ? pedidos  : [], 'materiais');
+
+    /* ── 4) grava, enterra os ids e manda para a nuvem ── */
+    if(enterrar.length){
+      try {
+        var tb = JSON.parse(localStorage.getItem('sp_tumbas')||'[]');
+        enterrar.forEach(function(id){ tb.push({id:id, ts:agora}); });
+        localStorage.setItem('sp_tumbas', JSON.stringify(tb));
+        if(typeof tumbas !== 'undefined' && Array.isArray(tumbas)){
+          enterrar.forEach(function(id){ tumbas.push({id:id, ts:agora}); });
+        }
+      } catch(e){}
+      DB.set('est', estoque);
+      if(r.kits)    DB.set('cat', catalogo);
+      if(r.pedidos) DB.set('pedidos', pedidos);
+      localStorage.setItem('sp_dirty','1');
+      if(typeof renderEstoque === 'function'){ try{ renderEstoque(); }catch(e){} }
+      console.log('[Estoque] '+r.juntados+' juntado(s), '+r.removidos+' removido(s), '+
+                  r.kits+' kit(s) e '+r.pedidos+' pedido(s) reapontado(s)');
+    }
+    localStorage.setItem('sp_estoque_limpo_v1','1');
+  } catch(e){ console.warn('[Estoque] limpeza:', e && e.message); }
+  return r;
+}
+window._limparEstoque = limparEstoque;
+
+/* o cadastro automático não pode recriar o que acabou de sair */
+var _cadOrig = window.cadastrarItensDoCatalogo;
+if(typeof _cadOrig === 'function'){
+  window.cadastrarItensDoCatalogo = function(silencioso){
+    var antes = (typeof estoque !== 'undefined') ? estoque.length : 0;
+    var n = _cadOrig.apply(this, arguments);
+    try {
+      if(estoque.length > antes){
+        var depois0 = estoque.length;
+        var limpo = estoque.filter(function(e){ return !(e && e.nome && _rem[_n(e.nome)]); });
+        limpo.forEach(function(e){
+          var d = _jun[_n(e.nome)];
+          if(d) e.nome = d;
+        });
+        // e some com o que ficou duplicado depois da troca de nome
+        var vistos = {}, final = [];
+        limpo.forEach(function(e){
+          var k = _n(e.nome);
+          if(vistos[k]) return;
+          vistos[k] = 1; final.push(e);
+        });
+        estoque.length = 0; final.forEach(function(e){ estoque.push(e); });
+        DB.set('est', estoque);
+        /* devolve quantos REALMENTE ficaram. Sem isto o app dizia ter
+           cadastrado 33 itens que ele mesmo tirava em seguida. */
+        n = Math.max(0, n - (depois0 - estoque.length));
+      }
+    } catch(e){}
+    return n;
+  };
+}
+
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(limparEstoque, 1800); });
+else setTimeout(limparEstoque, 1800);
+
+})();
+</script>
 
 </body>
 </html>
