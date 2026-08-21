@@ -5443,7 +5443,7 @@ function renderClientes() {
 // ══════════════════════════════════════════════════════════════
 // RECIBO
 // ══════════════════════════════════════════════════════════════
-async function gerarImagemRecibo(id) {
+async function gerarImagemRecibo(id, entregar) {
   const p = pedidos.find(x => x.id === id);
   if (!p) { toast('Pedido não encontrado'); return; }
   toast('<span class=ic-relogio></span> Gerando imagem...');
@@ -5570,20 +5570,25 @@ async function gerarImagemRecibo(id) {
     fc.toBlob(async blob=>{
       const nome=(p.cliente||'Pedido').replace(/[^a-zA-ZÀ-ÿ0-9]/g,'_');
       const fn='Recibo_SoUmParabens_'+nome+'.png';
+      /* Chamada de fora (a janela do recibo é outra aba): devolve a imagem
+         para quem pediu, porque copiar só funciona na janela que está em
+         foco — e a janela em foco é a do recibo, não a do app. */
+      if(typeof entregar === 'function'){ try{ entregar(blob, fn); }catch(e){} return; }
       const file=new File([blob],fn,{type:'image/png'});
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if(isMobile && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
         // Celular: compartilha direto pelo menu nativo (WhatsApp, etc.)
-        try{ await navigator.share({files:[file],title:'Confirmação — Só um Parabéns',text:'Segue a confirmação do seu pedido! <span class=ic-balao></span>'}); toast('<span class=ic-ok></span> Imagem compartilhada!');
+        try{ await navigator.share({files:[file],title:'Recibo — Só um Parabéns',text:'Segue o recibo do seu pedido! \u{1F388}'}); toast('<span class=ic-ok></span> Imagem compartilhada!');
         }catch(e){ if(e.name!=='AbortError') _downloadBlob(blob,fn); }
       } else {
         // Computador: copia imagem para área de transferência <span class=ic-seta></span> colar com Ctrl+V no WhatsApp Web
         try {
           await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
-          _mostrarModalImagemCopiada(canvas.toDataURL('image/png'));
+          _mostrarModalImagemCopiada(fc.toDataURL('image/png'));
         } catch(e) {
-          // Fallback: mostra imagem no modal para salvar manualmente
-          _mostrarModalImagemCopiada(canvas.toDataURL('image/png'), true);
+          // Não copiou (janela sem foco, navegador sem permissão): mostra
+          // a imagem para salvar na mão.
+          _mostrarModalImagemCopiada(fc.toDataURL('image/png'), true);
         }
       }
     },'image/png');
@@ -9249,7 +9254,7 @@ window._renderUltimaSync = function(){
   try{
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
-    var ver='v20/08-c15';
+    var ver='v20/08-c17';
     var txt;
     if(!t){ txt=ver+' · <span class=ic-nuvem></span> sem sync ainda'; }
     else{
@@ -9918,7 +9923,18 @@ if(typeof _resetOrig === 'function'){
 /* interceptação: se clicar sem ter salvo, salva primeiro e segue */
 function _exigeSalvo(fn){
   return function(){
+    /* Veio um id de pedido que já existe? Então não há nada a salvar —
+       é o caso de quem chama de fora do formulário, como a janela do
+       recibo. Sem isto o app tentava salvar um pedido em branco. */
+    try {
+      var _id = arguments[0];
+      if(_id && typeof _id === 'string' && typeof pedidos !== 'undefined' &&
+         pedidos.some(function(x){ return x && x.id === _id; })){
+        return fn.apply(this, arguments);
+      }
+    } catch(e){}
     if(_pedidoTemId()){ return fn.apply(this, arguments); }
+    var args = arguments;
     if(typeof toast === 'function') toast('<span class=ic-salvar></span> Salvando o pedido primeiro...');
     var antes = (typeof pedidos !== 'undefined') ? pedidos.length : 0;
     try { salvarPedido(); } catch(e){}
@@ -9929,7 +9945,9 @@ function _exigeSalvo(fn){
         return;
       }
       var novo = pedidos[pedidos.length-1];
-      fn.call(null, novo.id);
+      // repassa o resto dos parâmetros (o pedido de entrega da imagem ia junto)
+      var resto = Array.prototype.slice.call(args, 1);
+      fn.apply(null, [novo.id].concat(resto));
     }, 350);
   };
 }
@@ -12280,7 +12298,7 @@ window.imprimirRecibo = function(id){
     '#txtrec{display:none;width:92%;max-width:640px;height:220px;margin:12px auto;'+
     'font-family:monospace;font-size:11.5px;padding:10px;border:1.5px solid #D3A560;'+
     'border-radius:9px;background:#FEF5E7;color:#4A3B31}'+
-    '@media print{#txtrec{display:none!important}.noprint{display:none!important}}';
+    '@media print{#txtrec,#imgrec{display:none!important}.noprint{display:none!important}}';
 
   var texto = _textoRecibo(p);
   var wpp = String(p.whats || '').replace(/\D/g, '');
@@ -12302,6 +12320,8 @@ window.imprimirRecibo = function(id){
       '</div>'+
     '</div>'+
     '<div class="folha">'+html+'</div>'+
+    '<div id="imgrec" style="display:none;max-width:520px;margin:14px auto;padding:12px;'+
+      'background:#FEF5E7;border:1.5px solid #EBDBC0;border-radius:14px"></div>'+
     '<textarea id="txtrec" readonly>'+String(texto).replace(/</g,'&lt;')+'</textarea>'+
     '<scr'+'ipt>'+
     'var _txt=' + JSON.stringify(texto) + ';'+
@@ -12309,10 +12329,48 @@ window.imprimirRecibo = function(id){
     /* o popup não tem o app dentro dele: pede para a janela que o abriu gerar a arte */
     'function _enviarImagemDaqui(b){'+
     ' if(!window.opener || !window.opener.gerarImagemRecibo){'+
-    '   alert("Deixe a tela do app aberta para gerar a imagem."); return; }'+
+    '   alert("Deixe a janela do app aberta para gerar a imagem."); return; }'+
     ' var o=b.textContent; b.textContent="Gerando..."; b.disabled=true;'+
-    ' try{ window.opener.gerarImagemRecibo(_pid); window.opener.focus(); }catch(e){}'+
-    ' setTimeout(function(){ b.textContent=o; b.disabled=false; }, 2500); }'+
+    ' var voltar=function(){ b.textContent=o; b.disabled=false; };'+
+    /* o app desenha e devolve; a cópia acontece AQUI, na janela que está em foco */
+    ' try{ window.opener.gerarImagemRecibo(_pid, function(blob, fn){'+
+    '   _mostrarImagem(blob, fn, b, o, voltar);'+
+    ' }); }catch(e){ voltar(); alert("Não consegui gerar a imagem: "+(e.message||e)); }'+
+    ' setTimeout(function(){ if(b.disabled) voltar(); }, 8000); }'+
+
+    'function _mostrarImagem(blob, fn, b, o, voltar){'+
+    ' var url=URL.createObjectURL(blob);'+
+    ' var cx=document.getElementById("imgrec");'+
+    ' cx.innerHTML="";'+
+    ' var img=new Image(); img.src=url;'+
+    ' img.style.cssText="max-width:100%;border-radius:12px;border:1.5px solid #D3A560;display:block;margin:0 auto 10px";'+
+    ' cx.appendChild(img);'+
+    ' var linha=document.createElement("div"); linha.style.cssText="text-align:center";'+
+    ' var baixar=document.createElement("a"); baixar.href=url; baixar.download=fn;'+
+    ' baixar.className="btnwpp"; baixar.style.background="#7E634E"; baixar.textContent="Baixar imagem";'+
+    ' linha.appendChild(baixar);'+
+    /* celular: manda direto pelo menu de compartilhar */
+    ' try{ var f=new File([blob],fn,{type:"image/png"});'+
+    '  if(navigator.share && navigator.canShare && navigator.canShare({files:[f]})){'+
+    '    var sh=document.createElement("button"); sh.className="btnwpp"; sh.textContent="Compartilhar";'+
+    '    sh.onclick=function(){ navigator.share({files:[f],title:"Recibo — Só um Parabéns"}).catch(function(){}); };'+
+    '    linha.appendChild(sh); } }catch(e){}'+
+    ' cx.appendChild(linha);'+
+    ' cx.style.display="block";'+
+    ' var aviso=document.createElement("div");'+
+    ' aviso.style.cssText="font-size:11px;color:#A08869;margin-top:8px;text-align:center";'+
+    ' cx.appendChild(aviso);'+
+    /* tenta copiar; se o navegador não deixar, a imagem já está aí para salvar */
+    ' if(navigator.clipboard && window.ClipboardItem){'+
+    '  navigator.clipboard.write([new ClipboardItem({"image/png": blob})]).then(function(){'+
+    '    b.textContent="Copiada!"; setTimeout(voltar,2000);'+
+    '    aviso.innerHTML="Imagem copiada — cole no WhatsApp com <b>Ctrl+V</b>.";'+
+    '  }).catch(function(){ voltar();'+
+    '    aviso.innerHTML="O navegador não deixou copiar. Use <b>Baixar imagem</b> e anexe no WhatsApp.";'+
+    '  });'+
+    ' } else { voltar();'+
+    '   aviso.innerHTML="Use <b>Baixar imagem</b> e anexe no WhatsApp."; }'+
+    ' img.scrollIntoView({behavior:"smooth",block:"center"}); }'+
     'function _copiarRecibo(b){'+
     ' var o=b.textContent;'+
     ' function ok(){ b.textContent="Copiado!"; setTimeout(function(){b.textContent=o;},1800); }'+
@@ -12673,58 +12731,10 @@ function migrar(){
 window._migrarItensFornecedor = migrar;
 
 /* mostra os itens no cartão do fornecedor, na lista */
-var _renderFornOrig = window.renderFornecedores;
-if(typeof _renderFornOrig === 'function'){
-  window.renderFornecedores = function(){
-    var r = _renderFornOrig.apply(this, arguments);
-    try {
-      var lista = document.getElementById('forn-list');
-      if(!lista) return r;
-      (fornecedores||[]).forEach(function(f){
-        if(!f || !f.itens || !f.itens.length) return;
-        // acha o cartão pelo nome e acrescenta os itens
-        var alvos = lista.querySelectorAll('.li-title');
-        for(var i=0;i<alvos.length;i++){
-          if(_n(alvos[i].textContent) !== _n(f.nome)) continue;
-          var pai = alvos[i].parentNode;
-          if(pai.querySelector('.forn-itens')) break;
-          var d = document.createElement('div');
-          d.className = 'forn-itens';
-          d.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:5px';
-          d.innerHTML = f.itens.slice(0,6).map(function(t){
-            return '<span style="font-size:9.5px;background:#FEF5E7;border:1px solid #EBDBC0;'+
-                   'border-radius:10px;padding:2px 7px;color:#7E634E;font-weight:600">'+
-                   String(t).replace(/</g,'&lt;')+'</span>';
-          }).join('') + (f.itens.length>6
-            ? '<span style="font-size:9.5px;color:#A08869;padding:2px 4px">+'+(f.itens.length-6)+'</span>' : '');
-          pai.appendChild(d);
-          break;
-        }
-      });
-    } catch(e){}
-    return r;
-  };
-}
-
-/* o PDF de fornecedores passa a listar os itens */
-var _pdfOrig = window._pdfFornecedores;
-if(typeof _pdfOrig === 'function'){
-  window._pdfFornecedores = function(){
-    // acrescenta os itens na observação só para o PDF, sem gravar
-    var originais = [];
-    try {
-      (fornecedores||[]).forEach(function(f){
-        originais.push(f.obs);
-        if(f.itens && f.itens.length){
-          f.obs = 'Fornece: ' + f.itens.join(' · ') + (f.obs ? ('  —  ' + f.obs) : '');
-        }
-      });
-    } catch(e){}
-    var r = _pdfOrig.apply(this, arguments);
-    try { (fornecedores||[]).forEach(function(f,i){ f.obs = originais[i]; }); } catch(e){}
-    return r;
-  };
-}
+/* Os dois enfeites que moravam aqui — os itens no cartão e os itens no
+   PDF — foram refeitos no bloco de 20/08, onde o item passou a ser
+   {nome, link}. Rodando os dois, o PDF saía com "[object Object]" e com
+   "Fornece:" repetido duas vezes na mesma linha. */
 
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(migrar, 1200); });
 else setTimeout(migrar, 1200);
