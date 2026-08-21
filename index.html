@@ -1116,13 +1116,15 @@ function _mudarFiltroMes(val){
 
     <!-- FORNECEDORES -->
     <div id="screen-fornecedores" class="screen">
-      <div class="page-header" style="position:relative">
-        <div class="page-title"><svg viewBox="0 0 24 24" style="color:#9C7B5C"><path d="M2 20V9l6 3V9l6 3V8l6 2v10Z"/><path d="M6 20v-3M12 20v-3M18 20v-3"/></svg>Fornecedores</div>
-        <div class="page-sub" id="forn-sub">Seus fornecedores</div>
+      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div style="min-width:0">
+          <div class="page-title"><svg viewBox="0 0 24 24" style="color:#9C7B5C"><path d="M2 20V9l6 3V9l6 3V8l6 2v10Z"/><path d="M6 20v-3M12 20v-3M18 20v-3"/></svg>Fornecedores</div>
+          <div class="page-sub" id="forn-sub">Seus fornecedores</div>
+        </div>
         <button type="button" onclick="_pdfFornecedores()" title="Gerar a lista em PDF"
-          style="position:absolute;right:0;top:0;background:#FEF5E7;border:1.5px solid #D3A560;color:#7E634E;
-                 border-radius:10px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;
-                 display:flex;align-items:center;gap:6px">
+          style="flex-shrink:0;background:#FEF5E7;border:1.5px solid #D3A560;color:#7E634E;
+                 border-radius:11px;padding:9px 14px;font-size:12px;font-weight:800;cursor:pointer;
+                 display:flex;align-items:center;gap:6px;white-space:nowrap">
           <svg width="16" height="16" viewBox="0 0 24 24" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
           PDF
         </button>
@@ -9254,7 +9256,7 @@ window._renderUltimaSync = function(){
   try{
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
-    var ver='v20/08-c17';
+    var ver='v20/08-c21';
     var txt;
     if(!t){ txt=ver+' · <span class=ic-nuvem></span> sem sync ainda'; }
     else{
@@ -10714,6 +10716,11 @@ function _idAtual(id){
 window._fichaComandaPublica = _fichaComanda;
 window._fichaReciboPublica  = _fichaRecibo;
 window._cssFicha = function(){ return CSS; };
+/* a logo e os dados da empresa moram dentro deste bloco fechado.
+   Sem exportar, quem desenha a imagem do recibo não os enxerga —
+   e a arte saía sem logo e com o rodapé vazio. */
+window.LOGO_FICHA = LOGO_FICHA;
+window.EMPRESA    = EMPRESA;
 
 window.imprimirRecibo = function(id){
   var p = _acha(_idAtual(id));
@@ -13033,7 +13040,6 @@ if(typeof _pdfOrig17 === 'function'){
 /* o seed antigo já rodou nos aparelhos dela: renomeia lá também */
 function arrumarKraft(){
   try {
-    if(localStorage.getItem('sp_forn_kraft_v1')) return 0;
     if(typeof fornecedores === 'undefined') return 0;
     var f = fornecedores.find(function(x){ return x && _n(x.nome).indexOf('caixas de papelao kraft') === 0; });
     if(f){
@@ -13046,7 +13052,6 @@ function arrumarKraft(){
       DB.set('fornecedores', fornecedores);
       localStorage.setItem('sp_dirty','1');
     }
-    localStorage.setItem('sp_forn_kraft_v1','1');
     return f ? 1 : 0;
   } catch(e){ return 0; }
 }
@@ -13313,6 +13318,257 @@ else setTimeout(limparEstoque, 1800);
 
 })();
 </script>
+
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   IMAGEM DO RECIBO — refeita em 20/08
+
+   A arte antiga era outro layout, herdado do app da Tia Sú, e ainda
+   desenhava "<span class=ic-pessoa></span>" como texto porque o
+   desenho no canvas não interpreta HTML.
+
+   Esta versão desenha o MESMO recibo que a Laura vê na tela: logo à
+   esquerda, RECIBO à direita, os campos, a tabela de itens, as três
+   caixas de valores e o rodapé. Sem ícone nenhum — no canvas, ícone
+   só existiria como imagem.
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+var OURO='#D3A560', MARROM='#7E634E', ESCURO='#4A3B31', CREME='#FEF5E7',
+    CINZA='#A08869', BORDA='#EBDBC0';
+
+function _rs2(v){ return 'R$ ' + (Number(v)||0).toFixed(2).replace('.',','); }
+
+/* quebra o texto na largura disponível */
+function _linhas(ctx, texto, largura){
+  var out=[], linha='';
+  String(texto||'').split(/\s+/).forEach(function(w){
+    var t = linha ? linha+' '+w : w;
+    if(ctx.measureText(t).width > largura && linha){ out.push(linha); linha=w; }
+    else linha=t;
+  });
+  if(linha) out.push(linha);
+  return out;
+}
+
+window.gerarImagemRecibo = function(id, entregar){
+  var p = null;
+  try { p = (pedidos||[]).find(function(x){ return x.id === id; }); } catch(e){}
+  if(!p){ if(typeof toast==='function') toast('Pedido não encontrado'); return; }
+  if(typeof toast==='function' && !entregar) toast('Gerando a imagem...');
+
+  var W=920, M=38;                    // largura e margem
+  var itens = (p.itens && p.itens.length)
+    ? p.itens.map(function(it){ return {q:it.qtd||1, n:it.nome||'', v:it.valor}; })
+    : [{q:1, n:p.produto||'—', v:p.valor}];
+
+  var endereco='';
+  try { if(p.endereco && typeof _enderecoCompleto==='function') endereco=_enderecoCompleto(p.endereco); } catch(e){}
+  var pgto = p.pgto || '';
+  if(p.parcelas) pgto += ' em '+p.parcelas+'x de '+_rs2((p.valor||0)/p.parcelas);
+  var resta = (p.valor||0) - (p.sinal||0);
+
+  /* ── mede a altura antes de desenhar ── */
+  var medidor = document.createElement('canvas').getContext('2d');
+  medidor.font = '400 15px Montserrat, Arial, sans-serif';
+  var larguraObs = W - M*2 - 20;
+  var linhasObs  = p.obs ? _linhas(medidor, p.obs, larguraObs) : [];
+  medidor.font = '400 13px Montserrat, Arial, sans-serif';
+  var linhasAviso = _linhas(medidor,
+    'Confira com atenção todos os detalhes acima — nomes, datas e valores. Após o produto '+
+    'finalizado, não nos responsabilizamos por erros que não tenham sido apontados neste recibo.',
+    W - M*2);
+
+  var H = 150            // cabeçalho
+        + 74             // cliente / whatsapp
+        + (endereco ? 62 : 0)
+        + 74             // evento / pagamento
+        + 42 + itens.length*36 + 14   // tabela
+        + 92             // caixas de valores
+        + (linhasObs.length ? 30 + linhasObs.length*22 + 14 : 0)
+        + linhasAviso.length*20 + 18
+        + 46;            // rodapé
+
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var ctx = cv.getContext('2d');
+
+  function desenhar(logo){
+    ctx.fillStyle='#FFFFFF'; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle=OURO; ctx.lineWidth=3; ctx.strokeRect(1.5,1.5,W-3,H-3);
+
+    var y = 40;
+
+    /* ── cabeçalho: logo à esquerda, RECIBO à direita ── */
+    if(logo){
+      var lh=96, lw=logo.width*(lh/logo.height);
+      try { ctx.drawImage(logo, M, y-12, lw, lh); } catch(e){}
+    } else {
+      ctx.textAlign='left'; ctx.fillStyle=MARROM;
+      ctx.font='700 30px Georgia, serif'; ctx.fillText('Só um Parabéns', M, y+30);
+      ctx.font='400 12px Montserrat, Arial, sans-serif'; ctx.fillStyle=CINZA;
+      ctx.fillText('PRESENTES PERSONALIZADOS', M, y+52);
+    }
+    ctx.textAlign='right';
+    ctx.fillStyle=ESCURO; ctx.font='700 30px Georgia, serif';
+    ctx.fillText('R E C I B O', W-M, y+22);
+    var lr=ctx.measureText('R E C I B O').width;
+    ctx.strokeStyle=OURO; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(W-M-lr, y+32); ctx.lineTo(W-M, y+32); ctx.stroke();
+    ctx.fillStyle=CINZA; ctx.font='400 13px Montserrat, Arial, sans-serif';
+    ctx.fillText('entrega', W-M, y+56);
+    ctx.fillStyle=ESCURO; ctx.font='700 19px Montserrat, Arial, sans-serif';
+    ctx.fillText(p.dataEntrega ? new Date(p.dataEntrega+'T12:00').toLocaleDateString('pt-BR') : '—', W-M, y+80);
+
+    y = 150;
+    ctx.strokeStyle=OURO; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(M,y); ctx.lineTo(W-M,y); ctx.stroke();
+    y += 26;
+
+    /* ── um campo: rótulo pequeno em cima, valor embaixo ── */
+    function campo(rot, val, x, larg){
+      ctx.textAlign='left';
+      ctx.fillStyle=CINZA; ctx.font='700 11px Montserrat, Arial, sans-serif';
+      ctx.fillText(String(rot).toUpperCase(), x, y);
+      ctx.fillStyle=ESCURO; ctx.font='700 16px Montserrat, Arial, sans-serif';
+      var t=String(val||'—');
+      while(ctx.measureText(t).width > larg && t.length>4) t=t.slice(0,-2);
+      ctx.fillText(t, x, y+24);
+      ctx.strokeStyle='#F0E6D6'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(x,y+36); ctx.lineTo(x+larg,y+36); ctx.stroke();
+    }
+    var meio = (W-M*2)/2, col2 = M + meio + 20;
+    campo('Cliente', p.cliente, M, meio-20);
+    campo('WhatsApp', p.whats, col2, meio-20);
+    y += 62;
+    if(endereco){ campo('Endereço de entrega', endereco, M, W-M*2); y += 62; }
+    campo('Evento', p.produto, M, meio-20);
+    campo('Pagamento', pgto, col2, meio-20);
+    y += 66;
+
+    /* ── tabela de itens ── */
+    ctx.fillStyle=CREME; ctx.fillRect(M, y, W-M*2, 30);
+    ctx.fillStyle=MARROM; ctx.font='700 11px Montserrat, Arial, sans-serif'; ctx.textAlign='left';
+    ctx.fillText('QTD', M+12, y+20);
+    ctx.fillText('ITEM', M+72, y+20);
+    ctx.textAlign='right'; ctx.fillText('VALOR', W-M-12, y+20);
+    y += 30;
+    itens.forEach(function(it){
+      y += 34;
+      ctx.textAlign='left';
+      ctx.fillStyle=OURO; ctx.font='700 15px Montserrat, Arial, sans-serif';
+      ctx.fillText(String(it.q), M+12, y);
+      ctx.fillStyle=ESCURO; ctx.font='400 15px Montserrat, Arial, sans-serif';
+      var nome=String(it.n);
+      while(ctx.measureText(nome).width > W-M*2-220 && nome.length>4) nome=nome.slice(0,-2);
+      ctx.fillText(nome, M+72, y);
+      if(it.v != null){
+        ctx.textAlign='right'; ctx.font='700 15px Montserrat, Arial, sans-serif';
+        ctx.fillText(_rs2(it.v), W-M-12, y);
+      }
+      ctx.strokeStyle='#F5EEE2'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(M,y+10); ctx.lineTo(W-M,y+10); ctx.stroke();
+    });
+    y += 30;
+
+    /* ── três caixas: total, pago, resta ── */
+    var lc=(W-M*2-20)/3;
+    [['Total',p.valor,false],['Pago',p.sinal,false],['Resta',resta,true]].forEach(function(b,i){
+      var x=M+i*(lc+10);
+      ctx.fillStyle = b[2] ? CREME : '#FFFFFF';
+      ctx.strokeStyle = b[2] ? OURO : BORDA; ctx.lineWidth=1.5;
+      if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(x,y,lc,62,10); ctx.fill(); ctx.stroke(); }
+      else { ctx.fillRect(x,y,lc,62); ctx.strokeRect(x,y,lc,62); }
+      ctx.textAlign='center';
+      ctx.fillStyle=CINZA; ctx.font='700 11px Montserrat, Arial, sans-serif';
+      ctx.fillText(b[0].toUpperCase(), x+lc/2, y+22);
+      ctx.fillStyle = b[2] ? MARROM : ESCURO; ctx.font='700 20px Montserrat, Arial, sans-serif';
+      ctx.fillText(_rs2(b[1]), x+lc/2, y+48);
+    });
+    y += 92;
+
+    /* ── observações ── */
+    if(linhasObs.length){
+      ctx.textAlign='left';
+      ctx.fillStyle=CINZA; ctx.font='700 11px Montserrat, Arial, sans-serif';
+      ctx.fillText('PERSONALIZAÇÃO / OBSERVAÇÕES', M, y); y += 22;
+      ctx.fillStyle=ESCURO; ctx.font='400 15px Montserrat, Arial, sans-serif';
+      linhasObs.forEach(function(l){ ctx.fillText(l, M, y); y += 22; });
+      y += 14;
+    }
+
+    /* ── aviso ── */
+    ctx.strokeStyle='#F0E6D6'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(M,y-8); ctx.lineTo(W-M,y-8); ctx.stroke();
+    y += 12;
+    ctx.textAlign='left'; ctx.fillStyle=CINZA; ctx.font='400 13px Montserrat, Arial, sans-serif';
+    linhasAviso.forEach(function(l){ ctx.fillText(l, M, y); y += 20; });
+
+    /* ── rodapé ── */
+    y = H - 26;
+    var E = window.EMPRESA || {};
+    ctx.fillStyle=CINZA; ctx.font='400 12px Montserrat, Arial, sans-serif';
+    ctx.textAlign='left';  ctx.fillText('CNPJ '+(E.cnpj||'')+' · '+(E.cidade||''), M, y);
+    ctx.textAlign='right'; ctx.fillText((E.fone||'')+' · '+(E.insta||''), W-M, y);
+
+    /* ── entrega ── */
+    cv.toBlob(function(blob){
+      var nome=(p.cliente||'Pedido').replace(/[^a-zA-ZÀ-ÿ0-9]/g,'_');
+      var fn='Recibo_SoUmParabens_'+nome+'.png';
+      if(typeof entregar === 'function'){ try{ entregar(blob, fn); }catch(e){} return; }
+      // chamada de dentro do app: compartilha no celular, copia no computador
+      try {
+        var file=new File([blob],fn,{type:'image/png'});
+        if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+          navigator.share({files:[file], title:'Recibo — Só um Parabéns'})
+            .catch(function(){ _baixar(blob,fn); });
+          return;
+        }
+      } catch(e){}
+      if(navigator.clipboard && window.ClipboardItem){
+        navigator.clipboard.write([new ClipboardItem({'image/png': blob})]).then(function(){
+          if(typeof toast==='function') toast('Imagem copiada! Cole no WhatsApp com Ctrl+V.');
+        }).catch(function(){ _baixar(blob,fn); });
+      } else _baixar(blob,fn);
+    },'image/png');
+  }
+
+  function _baixar(blob,fn){
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=fn;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(a.href); },800);
+    if(typeof toast==='function') toast('Imagem baixada.');
+  }
+
+  /* a logo é data:base64, então carrega na hora — mas espera mesmo assim */
+  var src = window.LOGO_FICHA || '';
+  if(!src){ desenhar(null); return; }
+  /* prazo para a logo: se ela não carregar nem der erro, a imagem sairia
+     nunca. Passado 1,2s desenha sem ela — é melhor um recibo sem logo do
+     que um botão que não faz nada. */
+  var feito = false;
+  function uma(logo){ if(feito) return; feito = true; desenhar(logo); }
+  var img = new Image();
+  img.onload  = function(){ uma(img); };
+  img.onerror = function(){ uma(null); };
+  img.src = src;
+  if(img.complete && img.naturalWidth) uma(img);
+  setTimeout(function(){ uma(null); }, 1200);
+};
+
+/* quem intercepta para salvar o pedido antes precisa reenfeitar o novo */
+try {
+  if(typeof _exigeSalvo === 'function'){
+    window.gerarImagemRecibo = _exigeSalvo(window.gerarImagemRecibo);
+  }
+} catch(e){}
+
+})();
+</script>
+
 
 </body>
 </html>
