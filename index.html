@@ -6279,9 +6279,11 @@ function exportarListaPDF() {
 <title>Lista de Compras — Só um Parabéns</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: Arial, sans-serif; padding: 24px; color: #333; }
-  .header { display:flex; align-items:center; gap:16px; margin-bottom:20px; padding-bottom:16px; border-bottom:3px solid #7E634E; }
-  .titulo { font-size:22px; font-weight:800; color:#7E634E; }
+  @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500;600;700;800&display=swap");
+  body { font-family: Montserrat, Arial, sans-serif; padding: 24px; color: #4A3B31; }
+  .header { display:flex; align-items:center; gap:18px; margin-bottom:20px; padding-bottom:16px; border-bottom:2px solid #D3A560; }
+  .logopdf { width:96px; height:auto; display:block; flex-shrink:0; }
+  .titulo { font-family:"Playfair Display",Georgia,serif; font-size:24px; font-weight:700; color:#7E634E; }
   .sub { font-size:12px; color:#888; margin-top:2px; }
   table { width:100%; border-collapse:collapse; margin-top:4px; }
   thead tr { background:#7E634E; }
@@ -6296,8 +6298,9 @@ function exportarListaPDF() {
 </style>
 </head><body>
 <div class="header">
+  ${window.LOGO_FICHA ? `<img class="logopdf" src="${window.LOGO_FICHA}" alt="Só um Parabéns">` : ''}
   <div>
-    <div class="titulo"><span class=ic-carrinho></span> Lista de Compras — Só um Parabéns</div>
+    <div class="titulo">Lista de Compras</div>
     <div class="sub">Gerado em ${new Date().toLocaleDateString('pt-BR', {weekday:'long',day:'2-digit',month:'long',year:'numeric'})} · ${listaCompras.length} item(ns)</div>
   </div>
 </div>
@@ -9256,7 +9259,7 @@ window._renderUltimaSync = function(){
   try{
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
-    var ver='v20/08-c21';
+    var ver='v20/08-c24';
     var txt;
     if(!t){ txt=ver+' · <span class=ic-nuvem></span> sem sync ainda'; }
     else{
@@ -10574,7 +10577,7 @@ var CSS = ''+
 '.val{font-size:12.5px;font-weight:600;border-bottom:1px dotted #E0D3C2;padding-bottom:2px;min-height:16px}'+
 '.bloco{margin-top:8px}'+
 'table{width:100%;border-collapse:collapse;font-size:12px;margin-top:3px}'+
-'th{background:#FEF5E7;color:#7E634E;font-size:8.5px;text-transform:uppercase;letter-spacing:.7px;padding:4px 6px;text-align:left}'+
+'th{background:#FEF5E7;color:#7E634E;font-family:Montserrat,Arial,sans-serif;font-size:8.5px;text-transform:uppercase;letter-spacing:.7px;padding:4px 6px;text-align:left}'+
 'td{padding:4px 6px;border-bottom:1px solid #F2E9DC}'+
 'td.q{width:46px;font-weight:700;color:#D3A560}'+
 'td.v{width:88px;text-align:right;font-weight:700}'+
@@ -10827,13 +10830,16 @@ window._pdfFornecedores = function(){
   var hoje = new Date().toLocaleDateString('pt-BR');
   var css = ''+
    '@page{size:A4;margin:12mm}'+
-   'body{font-family:"Segoe UI",Arial,sans-serif;color:#4A3B31;margin:0;padding:0}'+
-   '.cab{border-bottom:2px solid #D3A560;padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-end}'+
-   '.marca{font-size:20px;font-weight:800;color:#7E634E}'+
-   '.marca small{display:block;font-size:9px;font-weight:600;color:#D3A560;letter-spacing:1.6px;text-transform:uppercase;margin-top:2px}'+
+   '@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500;600;700;800&display=swap");'+
+   'body{font-family:Montserrat,"Segoe UI",Arial,sans-serif;color:#4A3B31;margin:0;padding:0}'+
+   '.logopdf{width:118px;height:auto;display:block}'+
+   '.marcatxt{font-family:"Playfair Display",Georgia,serif;font-size:22px;font-weight:700;color:#7E634E}'+
+   '.marcatxt small{display:block;font-family:Montserrat,Arial,sans-serif;font-size:8.5px;font-weight:600;color:#A08869;letter-spacing:1.8px;text-transform:uppercase;margin-top:3px}'+
+   '.cab{border-bottom:2px solid #D3A560;padding-bottom:12px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-end}'+
+   '.marca{flex-shrink:0}'+
    '.meta{text-align:right;font-size:10px;color:#B09880}'+
    '.grupo{margin-bottom:16px;page-break-inside:avoid}'+
-   '.cat{font-size:11px;font-weight:800;color:#fff;background:#D3A560;border-radius:20px;padding:4px 14px;display:inline-block;margin-bottom:5px}'+
+   '.cat{font-size:11px;font-weight:800;color:#fff;background:#7E634E;border-radius:20px;padding:4px 14px;display:inline-block;margin-bottom:5px}'+
    '.cat span{font-weight:600;opacity:.85}'+
    'table{width:100%;border-collapse:collapse;font-size:10.5px}'+
    'th{background:#FEF5E7;color:#7E634E;font-size:8.5px;text-transform:uppercase;letter-spacing:.7px;padding:5px 7px;text-align:left}'+
@@ -10852,8 +10858,13 @@ window._pdfFornecedores = function(){
     '<title>Fornecedores — Só um Parabéns</title><style>'+css+'</style></head><body>'+
     '<div class="noprint"><button onclick="window.print()"><span class=ic-imprimir></span> Imprimir / Salvar PDF</button>'+
     '<button class="sec" onclick="window.close()">Fechar</button></div>'+
-    '<div class="cab"><div class="marca">Só um Parabéns<small>Presentes Personalizados</small></div>'+
-    '<div class="meta">Lista de fornecedores<br><b>'+lista.length+'</b> cadastrados · '+hoje+'</div></div>'+
+    '<div class="cab">'+
+      '<div class="marca">'+
+        (window.LOGO_FICHA ? '<img class="logopdf" src="'+window.LOGO_FICHA+'" alt="Só um Parabéns">'
+                           : '<div class="marcatxt">Só um Parabéns<small>Presentes Personalizados</small></div>')+
+      '</div>'+
+      '<div class="meta">Lista de fornecedores<br><b>'+lista.length+'</b> cadastrados · '+hoje+'</div>'+
+    '</div>'+
     corpo+
     '<div class="pe">Gerado pelo app Só um Parabéns · '+hoje+'</div>'+
     '</body></html>';
@@ -12316,14 +12327,16 @@ window.imprimirRecibo = function(id){
     '<meta name="viewport" content="width=device-width,initial-scale=1">'+
     '<title>Recibo — '+String(p.cliente||'')+'</title><style>'+css+'</style></head><body>'+
     '<div class="noprint">'+
-      '<button onclick="window.print()">Imprimir</button>'+
+      '<button onclick="window.print()">Imprimir / Salvar PDF</button>'+
       '<button class="sec" onclick="_enviarImagemDaqui(this)">Enviar como imagem</button>'+
       '<button class="sec" onclick="_copiarRecibo(this)">Copiar texto</button>'+
       (wpp ? '<a class="btnwpp" href="'+linkWpp+'" target="_blank" rel="noopener">Enviar no WhatsApp</a>' : '')+
       '<button class="sec" onclick="window.close()">Fechar</button>'+
       '<div style="font-size:11px;color:#A08869;margin-top:8px">'+
-        '<b>Enviar como imagem</b> gera a arte do recibo (a janela do app precisa continuar aberta).<br>'+
-        'No computador, <b>Copiar texto</b> e colar no WhatsApp Web. No celular, <b>Enviar no WhatsApp</b> abre a conversa.'+
+        'Três jeitos de mandar este mesmo recibo para a cliente:<br>'+
+        '<b>Imprimir / Salvar PDF</b> — na janela que abrir, escolha <i>Salvar como PDF</i>. É este recibo, igualzinho.<br>'+
+        '<b>Enviar como imagem</b> — vira PNG e já copia; no celular abre o compartilhar.<br>'+
+        '<b>Copiar texto</b> ou <b>Enviar no WhatsApp</b> — quando ela prefere ler na conversa.'+
       '</div>'+
     '</div>'+
     '<div class="folha">'+html+'</div>'+
