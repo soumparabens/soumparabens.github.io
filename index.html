@@ -1519,6 +1519,7 @@ function _mudarFiltroMes(val){
             <span style="font-size:12px;font-weight:700;color:var(--pink)">Total do pedido</span>
             <span style="font-size:20px;font-weight:800;color:var(--pink)" id="p-total-display">R$ 0,00</span>
           </div>
+          <div id="p-taxa-linha" style="display:none;font-size:11px;color:var(--gray-d);font-weight:600;margin:-4px 0 8px;line-height:1.5"></div>
           <div class="form-row" style="margin:0">
             <div class="form-group">
               <label class="form-label">Valor pago (R$)</label>
@@ -1581,6 +1582,12 @@ function _mudarFiltroMes(val){
           <option value="12">12x</option>
         </select>
         <p style="font-size:10px;color:var(--gray-d);margin-top:4px" id="p-parcelas-info"></p>
+      </div>
+      <div class="form-group" id="p-taxa-group" style="display:none">
+        <label class="form-label"><span class=ic-dinheiro></span> Taxa desta venda (%)</label>
+        <input class="form-input" id="p-taxa" type="number" step="0.01" min="0" max="99"
+               placeholder="digite a taxa da maquininha" inputmode="decimal" oninput="_aplicarTaxaCartao()">
+        <p style="font-size:10px;color:var(--gray-d);margin-top:4px" id="p-taxa-info"></p>
       </div>
       <div class="form-group">
         <label class="form-label">Personalização / Observações</label>
@@ -2043,7 +2050,7 @@ const DB = {
   if(!localStorage.getItem('sp_cat_v2')){
     var _seed=[{"nome": "Convite para Dindos Padrinhos Batismo 01", "cat": "Convite Dindos", "custo": 0, "preco": 159.0, "mg": 0, "descricao": "Contém duas xícaras, uma caixa mdf, um convite impresso, um fio de led e uma vela aromática.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "vela aromática", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 02", "cat": "Convite Dindos", "custo": 0, "preco": 153.0, "mg": 0, "descricao": "Contém duas xícaras, uma caixa acartonada branca, um convite impresso e uma vela aromática em formato de ursinho.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "caixa acartonada branca", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}, {"nome": "vela aromática em formato de ursinho", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 03", "cat": "Convite Dindos", "custo": 0, "preco": 169.0, "mg": 0, "descricao": "Contém duas xícaras, dois pires, uma caixa mdf, um convite impresso e uma vela aromáticano vidro 30gr.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}, {"nome": "vela aromáticano vidro 30gr", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 04", "cat": "Convite Dindos", "custo": 0, "preco": 197.0, "mg": 0, "descricao": "Contém duas xícaras, uma caixa mdf, um convite impresso, um fio de led e duas velas aromáticas no vidro 30gr.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "velas aromáticas no vidro 30gr", "qtd": 2}]}, {"nome": "Convite para Dindos Padrinhos Batismo 05", "cat": "Convite Dindos", "custo": 0, "preco": 155.0, "mg": 0, "descricao": "Contém duas xícaras, dois pires, uma caixa mdf e um convite impresso.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 06", "cat": "Convite Dindos", "custo": 0, "preco": 177.0, "mg": 0, "descricao": "Contém duas canecas com tampa de bambu, uma caixa craft, uma vela no vidro 30gr e um convite impresso.", "materiais": [{"nome": "canecas com tampa de bambu", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "vela no vidro 30gr", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 07", "cat": "Convite Dindos", "custo": 0, "preco": 145.0, "mg": 0, "descricao": "Contém duas xicaras, dois pires, uma caixa craft, uma vela no vidro 30gr e um convite impresso.", "materiais": [{"nome": "xicaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "vela no vidro 30gr", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 08", "cat": "Convite Dindos", "custo": 0, "preco": 131.0, "mg": 0, "descricao": "Contém duas xicaras, dois pires, uma caixa craft e um convite impresso.", "materiais": [{"nome": "xicaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 09", "cat": "Convite Dindos", "custo": 0, "preco": 185.0, "mg": 0, "descricao": "Contém duas xicaras, dois pires, uma caixa mdf, um porta retrato e um convite impresso.", "materiais": [{"nome": "xicaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 10", "cat": "Convite Dindos", "custo": 0, "preco": 127.0, "mg": 0, "descricao": "Contém duas xicaras, uma caixa craft, uma vela no vidro e um convite impresso.", "materiais": [{"nome": "xicaras", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "vela no vidro", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 01", "cat": "Convite Dindos", "custo": 0, "preco": 88.0, "mg": 0, "descricao": "Contém uma caneca alça coração (outras cores disponiveis), uma caixa craft, uma vela urso e um convite impresso.", "materiais": [{"nome": "caneca alça coração (outras cores disponiveis)", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "vela urso", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 03", "cat": "Convite Dindos", "custo": 0, "preco": 96.0, "mg": 0, "descricao": "Contém uma caneca de cerveja em vidro, uma caixa craft, um cerveja corona e um convite impresso.", "materiais": [{"nome": "caneca de cerveja em vidro", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "cerveja corona", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 04", "cat": "Convite Dindos", "custo": 0, "preco": 56.0, "mg": 0, "descricao": "Contém uma xícara, uma caixa cristal e um convite impresso.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "caixa cristal", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 02", "cat": "Convite Dindos", "custo": 0, "preco": 86.0, "mg": 0, "descricao": "Contém uma xicara, um pires, uma caixa craft, uma vela vidro e convite impresso.", "materiais": [{"nome": "xicara", "qtd": 1}, {"nome": "pires", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "vela vidro", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "kit revelação gravidez", "cat": "Maternidade", "custo": 0, "preco": 89.0, "mg": 0, "descricao": "Contém um body personalizado, um monóculo e um bilhete impresso.", "materiais": [{"nome": "body personalizado", "qtd": 1}, {"nome": "monóculo", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "kit revelação gravidez 02", "cat": "Maternidade", "custo": 0, "preco": 195.0, "mg": 0, "descricao": "Contém um body personalizado, um monóculo, um bilhete impresso, duas xicaras e dois pires.", "materiais": [{"nome": "body personalizado", "qtd": 1}, {"nome": "monóculo", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}, {"nome": "xicaras", "qtd": 2}, {"nome": "pires", "qtd": 2}]}, {"nome": "kit revelação gravidez 03", "cat": "Maternidade", "custo": 0, "preco": 169.0, "mg": 0, "descricao": "Contém duas xicaras personalizadas, um monóculo, um bilhete impresso,ima caixa mdf e um fio de led.", "materiais": [{"nome": "xicaras personalizadas", "qtd": 2}, {"nome": "monóculo", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}, {"nome": "ima caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}]}, {"nome": "kit revelação gravidez 04", "cat": "Maternidade", "custo": 0, "preco": 64.0, "mg": 0, "descricao": "Contém um body personalizado e um monóculo.", "materiais": [{"nome": "body personalizado", "qtd": 1}, {"nome": "monóculo", "qtd": 1}]}, {"nome": "kit revelação gravidez 05", "cat": "Maternidade", "custo": 0, "preco": 142.0, "mg": 0, "descricao": "Contém um body personalizado, uma caixa mdf, um bilhete, um monóculo, uma vela e um fio de led.", "materiais": [{"nome": "body personalizado", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "bilhete", "qtd": 1}, {"nome": "monóculo", "qtd": 1}, {"nome": "vela", "qtd": 1}, {"nome": "fio de led", "qtd": 1}]}, {"nome": "body personalizado", "cat": "Maternidade", "custo": 0, "preco": 49.0, "mg": 0, "descricao": "Body personalizado, tamanhos do P ao GG. Opções manga longa ou curta. Chamar no watts para escolher o seu. Pode ser personalizado."}, {"nome": "Mimo convite Dindos 01", "cat": "Convite Dindos", "custo": 0, "preco": 80.0, "mg": 0, "descricao": "Contem uma caixa mdf, um porta retrato, uma vela no vidro e um convite impresso.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "vela no vidro", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Vela santinha aromática", "cat": "Vela Lembrancinha", "custo": 0, "preco": 10.5, "mg": 0, "descricao": "Vela aromática 20gr. Possuímos essências de mamãe e bebê, vanilla e lavanda. Acompanha a tag personalizada. Após a compra,chamar no watts para definir os detalhes.", "materiais": [{"nome": "a tag personalizada", "qtd": 1}]}, {"nome": "Vela ursinha aromática", "cat": "Vela Lembrancinha", "custo": 0, "preco": 10.5, "mg": 0, "descricao": "Vela aromática 20gr. Possuímos essências de mamãe e bebê, vanilla e lavanda. Acompanha a tag personalizada. Após a compra,chamar no watts para definir os detalhes.", "materiais": [{"nome": "a tag personalizada", "qtd": 1}]}, {"nome": "Vela vidro aromática", "cat": "Vela Lembrancinha", "custo": 0, "preco": 14.0, "mg": 0, "descricao": "Vela aromática 20gr Possuímos essências de mamãe e bebê, vanilla e lavanda, para mais opções consultar no watts. Acompanha a tag personalizada. Após a compra,chamar no watts para definir os detalhes.", "materiais": [{"nome": "a tag personalizada", "qtd": 1}]}, {"nome": "Vela vidro aromática com mini rosário", "cat": "Vela Lembrancinha", "custo": 0, "preco": 18.0, "mg": 0, "descricao": "Vela aromática 20gr e um mini rosário. Possuímos essências de mamãe e bebê, vanilla e lavanda, para mais opções consultar no watts. Acompanha a tag personalizada. Após a compra,chamar no watts para definir os detalhes.", "materiais": [{"nome": "a tag personalizada", "qtd": 1}]}, {"nome": "Vela vidro aromática com saquinho de organza", "cat": "Vela Lembrancinha", "custo": 0, "preco": 17.5, "mg": 0, "descricao": "Vela aromática 20gr com saquinho de organza e tag. Possuímos essências de mamãe e bebê, vanilla e lavanda, para mais opções consultar no watts. Acompanha a tag personalizada. Após a compra,chamar no watts para definir os detalhes.", "materiais": [{"nome": "a tag personalizada", "qtd": 1}]}, {"nome": "Mimo convite Dindo Padrinho solteiro 02", "cat": "Convite Dindos", "custo": 0, "preco": 113.0, "mg": 0, "descricao": "Contem uma caixa mdf, um porta retrato, duas barrinhas de nutella, um convite impresso e uma vela aromática ursinho.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "barrinhas de nutella", "qtd": 2}, {"nome": "convite impresso", "qtd": 1}, {"nome": "vela aromática ursinho", "qtd": 1}]}, {"nome": "Monóculo chaveiro", "cat": "Mimos", "custo": 0, "preco": 15.0, "mg": 0, "descricao": "Contém um monóculo chaveiro e um saquinho de organza. Pode ir uma foto ou uma escrita.", "materiais": [{"nome": "monóculo chaveiro", "qtd": 1}, {"nome": "saquinho de organza", "qtd": 1}]}, {"nome": "Imã azulejo de geladeira 7,5cm", "cat": "Mimos", "custo": 0, "preco": 30.0, "mg": 0, "descricao": "Imã 7,5cm em azulejo, pode ir uma foto ou escrita."}, {"nome": "Imã azulejo de geladeira 4,5cm", "cat": "Mimos", "custo": 0, "preco": 12.0, "mg": 0, "descricao": "Imã 4,5cm em azulejo, pode ir uma foto ou escrita."}, {"nome": "Mimo kit dindos monóculo e vela 03", "cat": "Vela Lembrancinha", "custo": 0, "preco": 72.0, "mg": 0, "descricao": "Contem uma caixa mdf, uma vela aromática, um convite impresso, um mini rosário e dois monóculos.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "vela aromática", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}, {"nome": "mini rosário", "qtd": 1}, {"nome": "monóculos", "qtd": 2}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 05", "cat": "Convite Dindos", "custo": 0, "preco": 163.0, "mg": 0, "descricao": "Contém uma caneca de cerveja em vidro, uma caixa mdf, um porta retrato, um fio de led e um convite impresso.", "materiais": [{"nome": "caneca de cerveja em vidro", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 06", "cat": "Convite Dindos", "custo": 0, "preco": 158.0, "mg": 0, "descricao": "Contém uma xícara, um pires, uma caixa mdf, um fio de led, um porta retrato e um convite.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "pires", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 07", "cat": "Convite Dindos", "custo": 0, "preco": 157.0, "mg": 0, "descricao": "Contém uma xícara, um pires, uma caixa mdf, um fio de led, um porta retrato, uma vela santa e um convite.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "pires", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "vela santa", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Lembrancinha Avós", "cat": "Avós", "custo": 0, "preco": 76.0, "mg": 0, "descricao": "Contem uma caixa mdf, um porta retrato, uma vela santa e um bilhete impresso.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "vela santa", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit formatura 01", "cat": "Formatura", "custo": 0, "preco": 134.0, "mg": 0, "descricao": "contém 1 caneca com tampa de bambu, 1 caixa craft, um coador, um monóculo e um bilhete.", "materiais": [{"nome": "1 caneca com tampa de bambu", "qtd": 1}, {"nome": "1 caixa craft", "qtd": 1}, {"nome": "coador", "qtd": 1}, {"nome": "monóculo", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit formatura 02", "cat": "Formatura", "custo": 0, "preco": 227.0, "mg": 0, "descricao": "contém 1 xícara, 1 caixa acartonada, um balão bubble 10 , uma barra de ferrero rocher, um trio de ferrero rocher e uma mini espumante.", "materiais": [{"nome": "1 xícara", "qtd": 1}, {"nome": "1 caixa acartonada", "qtd": 1}, {"nome": "balão bubble 10", "qtd": 1}, {"nome": "barra de ferrero rocher", "qtd": 1}, {"nome": "trio de ferrero rocher", "qtd": 1}, {"nome": "mini espumante", "qtd": 1}]}, {"nome": "Caixa formatura 03", "cat": "Formatura", "custo": 0, "preco": 55.0, "mg": 0, "descricao": "Contém uma caixa capelo na cor preta.", "materiais": [{"nome": "caixa capelo na cor preta", "qtd": 1}]}, {"nome": "Kit formatura 04", "cat": "Formatura", "custo": 0, "preco": 68.0, "mg": 0, "descricao": "contém 1 caneca com alça e interno colorido e uma caixa cristal.", "materiais": [{"nome": "1 caneca com alça", "qtd": 1}, {"nome": "interno colorido", "qtd": 1}, {"nome": "caixa cristal", "qtd": 1}]}, {"nome": "Kit avós casal 02", "cat": "Avós", "custo": 0, "preco": 131.0, "mg": 0, "descricao": "contém duas xícaras, dois pires, uma caixa craft e um bilhete impresso.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós solteiro 01", "cat": "Avós", "custo": 0, "preco": 112.0, "mg": 0, "descricao": "contém 1 canecas alça coração ( possuímos opções de cores), uma caixa mdf com a escrita vovó é amor de mãe em dobro, um bolinho, um café individual e um bilhete.", "materiais": [{"nome": "1 canecas alça coração ( possuímos opções de cores)", "qtd": 1}, {"nome": "caixa mdf com a escrita vovó é amor de mãe em dobro", "qtd": 1}, {"nome": "bolinho", "qtd": 1}, {"nome": "café individual", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit avós casal 03", "cat": "Avós", "custo": 0, "preco": 157.0, "mg": 0, "descricao": "contém duas xícaras, uma caixa acartonada, um monóculo e um bilhete impresso.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "caixa acartonada", "qtd": 1}, {"nome": "monóculo", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós solteiro 02", "cat": "Avós", "custo": 0, "preco": 107.0, "mg": 0, "descricao": "contém uma caneca, uma caixa acartonada, um monóculo e um bilhete impresso.", "materiais": [{"nome": "caneca", "qtd": 1}, {"nome": "caixa acartonada", "qtd": 1}, {"nome": "monóculo", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós casal 04", "cat": "Avós", "custo": 0, "preco": 169.0, "mg": 0, "descricao": "contém duas xícaras, uma caixa mdf, um monóculo, um fio de led e um bilhete impresso.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "monóculo", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós casal 05", "cat": "Avós", "custo": 0, "preco": 168.0, "mg": 0, "descricao": "contém duas xícaras, uma caixa mdf, uma vela, um fio de led e um bilhete impresso.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "vela", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós casal 06", "cat": "Avós", "custo": 0, "preco": 179.0, "mg": 0, "descricao": "contém duas canecas com colher (possuímos outras cores para escolha), uma caixa mdf e um bilhete impresso.", "materiais": [{"nome": "canecas com colher (possuímos outras cores para escolha)", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós solteiro 03", "cat": "Avós", "custo": 0, "preco": 113.0, "mg": 0, "descricao": "contém uma xícara, um pires, uma caixa mdf, um fio de led e um bilhete impresso.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "pires", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós solteiro 04", "cat": "Avós", "custo": 0, "preco": 170.0, "mg": 0, "descricao": "contém uma caneca, uma caixa mdf, um porta retrato, um fio de led, um bolinho, um café, um bombom e um bilhete impresso.", "materiais": [{"nome": "caneca", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "bolinho", "qtd": 1}, {"nome": "café", "qtd": 1}, {"nome": "bombom", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós solteiro 05", "cat": "Avós", "custo": 0, "preco": 106.0, "mg": 0, "descricao": "contém uma xícara , uma caixa mdf, um bolinho, um café e um bilhete impresso.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "bolinho", "qtd": 1}, {"nome": "café", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Caixa avó unitária", "cat": "Avós", "custo": 0, "preco": 45.0, "mg": 0, "descricao": "contém uma caixa mdf, com a escrita Vovó é amor de mamãe em dobro e um bilhete impresso.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "com a escrita Vovó é amor de mamãe em dobro", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós solteiro 06", "cat": "Avós", "custo": 0, "preco": 162.0, "mg": 0, "descricao": "contém uma caneca com colher (pode ir em outras cores a caneca), uma caixa mdf, um porta retrato, um bolinho, um café e um bilhete impresso.", "materiais": [{"nome": "caneca com colher (pode ir em outras cores a caneca)", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "bolinho", "qtd": 1}, {"nome": "café", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós solteiro 07", "cat": "Avós", "custo": 0, "preco": 96.0, "mg": 0, "descricao": "contém uma xícara, um pires, uma caixa mdf e um bilhete impresso.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "pires", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós casal 07", "cat": "Avós", "custo": 0, "preco": 140.0, "mg": 0, "descricao": "contém duas xícaras, uma vela ursinho, uma caixa mdf e um bilhete impresso.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "vela ursinho", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós casal 08", "cat": "Avós", "custo": 0, "preco": 184.0, "mg": 0, "descricao": "contém duas xícaras, dois pires, uma vela no vidro, um fio de led, uma caixa mdf e um bilhete impresso.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "vela no vidro", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós casal 09", "cat": "Avós", "custo": 0, "preco": 177.0, "mg": 0, "descricao": "contém duas xícaras, dois pires, uma vela no vidro, dois mini terço, uma caixa mdf e um bilhete impresso.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "vela no vidro", "qtd": 1}, {"nome": "mini terço", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 11", "cat": "Convite Dindos", "custo": 0, "preco": 157.0, "mg": 0, "descricao": "Contém duas canecas alça coração, uma caixa craft, uma vela no vidro e um convite impresso.", "materiais": [{"nome": "canecas alça coração", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "vela no vidro", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 12", "cat": "Convite Dindos", "custo": 0, "preco": 149.0, "mg": 0, "descricao": "Contém duas canecas, duas tampas de bambu, uma caixa craft, uma vela e um convite impresso.", "materiais": [{"nome": "canecas", "qtd": 2}, {"nome": "tampas de bambu", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "vela", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 08", "cat": "Convite Dindos", "custo": 0, "preco": 105.0, "mg": 0, "descricao": "Contém uma caneca com colher (pode ser outras cores), uma caixa mdf e um convite.", "materiais": [{"nome": "caneca com colher (pode ser outras cores)", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Porta retrato unitário Dindos", "cat": "Mimos", "custo": 0, "preco": 30.0, "mg": 0, "descricao": "Contém um porta retrato pedestal (três opções de frases para escolha). medida 9cmx7cm", "materiais": [{"nome": "porta retrato pedestal (três opções de frases para escolha)", "qtd": 1}]}, {"nome": "Kit avós solteiro 08", "cat": "Avós", "custo": 0, "preco": 121.0, "mg": 0, "descricao": "contém uma xícara, um pires, uma caixa craft, um Body e um bilhete impresso.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "pires", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "Body", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 13", "cat": "Convite Dindos", "custo": 0, "preco": 149.0, "mg": 0, "descricao": "Contém duas canecas, uma caixa craft, uma vela santa e um convite impresso.", "materiais": [{"nome": "canecas", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "vela santa", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Kit avós casal 10", "cat": "Avós", "custo": 0, "preco": 143.0, "mg": 0, "descricao": "contém duas canecas alça coração (possuímos outras cores para escolha) uma caixa craft e um bilhete impresso.", "materiais": [{"nome": "canecas alça coração (possuímos outras cores para escolha) uma caixa craft", "qtd": 2}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 09", "cat": "Convite Dindos", "custo": 0, "preco": 108.0, "mg": 0, "descricao": "Contém uma caneca alça coração (pode ser outras cores), uma caixa craft, um porta retrato e um convite.", "materiais": [{"nome": "caneca alça coração (pode ser outras cores)", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Kit avós solteiro 09", "cat": "Avós", "custo": 0, "preco": 86.0, "mg": 0, "descricao": "contém uma xícara, um pires, uma caixa craft, uma vela no vidro e um bilhete impresso.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "pires", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "vela no vidro", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit formatura 05", "cat": "Formatura", "custo": 0, "preco": 132.0, "mg": 0, "descricao": "contém 1 caneca com alça coração e interno colorido (possuímos outras cores), e uma caixa capelo, um long neck, um pacote de amendoim.", "materiais": [{"nome": "1 caneca com alça coração", "qtd": 1}, {"nome": "interno colorido (possuímos outras cores)", "qtd": 1}, {"nome": "caixa capelo", "qtd": 1}, {"nome": "long neck", "qtd": 1}, {"nome": "pacote de amendoim", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 15", "cat": "Convite Dindos", "custo": 0, "preco": 181.0, "mg": 0, "descricao": "Contém duas canecas alça coração e interno colorido (possuímos outras cores), uma caixa mdf, uma vela vidro e um convite impresso.", "materiais": [{"nome": "canecas alça coração", "qtd": 2}, {"nome": "interno colorido (possuímos outras cores)", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "vela vidro", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 10", "cat": "Convite Dindos", "custo": 0, "preco": 114.0, "mg": 0, "descricao": "Contém uma caneca alça com colher (pode ser outras cores), uma caixa craft, um porta retrato e um convite.", "materiais": [{"nome": "caneca alça com colher (pode ser outras cores)", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 16", "cat": "Convite Dindos", "custo": 0, "preco": 161.0, "mg": 0, "descricao": "Contém duas xícaras, dois pires, um porta retrato e um convite impresso.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "porta retrato", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 11", "cat": "Convite Dindos", "custo": 0, "preco": 110.0, "mg": 0, "descricao": "Contém uma caneca alça e interior colorido (pode ser outras cores), um fio de led, uma caixa mdf e um convite.", "materiais": [{"nome": "caneca alça", "qtd": 1}, {"nome": "interior colorido (pode ser outras cores)", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Kit formatura 06", "cat": "Formatura", "custo": 0, "preco": 108.0, "mg": 0, "descricao": "contém 1 caneca com alça coração e interno colorido (possuímos outras cores), e uma caixa capelo.", "materiais": [{"nome": "1 caneca com alça coração", "qtd": 1}, {"nome": "interno colorido (possuímos outras cores)", "qtd": 1}, {"nome": "caixa capelo", "qtd": 1}]}, {"nome": "Kit formatura 07", "cat": "Formatura", "custo": 0, "preco": 94.0, "mg": 0, "descricao": "contém 1 caneca e uma caixa capelo.", "materiais": [{"nome": "1 caneca", "qtd": 1}, {"nome": "caixa capelo", "qtd": 1}]}, {"nome": "Xícara unitaria avós", "cat": "Avós", "custo": 0, "preco": 47.0, "mg": 0, "descricao": "Contém 1 xícara personalizada.", "materiais": [{"nome": "1 xícara personalizada", "qtd": 1}]}, {"nome": "Kit avós solteiro 10", "cat": "Avós", "custo": 0, "preco": 199.0, "mg": 0, "descricao": "contém uma caneca com colher (possuímos outras cores), uma caixa mdf, um café no vidro lor, um pacote de biscoito, um vidro de geleia e um bilhete impresso.", "materiais": [{"nome": "caneca com colher (possuímos outras cores)", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "café no vidro lor", "qtd": 1}, {"nome": "pacote de biscoito", "qtd": 1}, {"nome": "vidro de geleia", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós solteiro chá 11", "cat": "Avós", "custo": 0, "preco": 91.0, "mg": 0, "descricao": "contém uma xicara, uma caixa mdf, um pacote de biscoito, dois sachês de chá e um bilhete impresso.", "materiais": [{"nome": "xicara", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "pacote de biscoito", "qtd": 1}, {"nome": "sachês de chá", "qtd": 2}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Caneca unitária avô com foto", "cat": "Mimos", "custo": 0, "preco": 59.0, "mg": 0, "descricao": "Contém uma caneca com alça coração e interior colorido. (Possuímos outras cores disponíveis).", "materiais": [{"nome": "caneca com alça coração", "qtd": 1}, {"nome": "interior colorido", "qtd": 1}]}, {"nome": "Kit avós casal 11", "cat": "Avós", "custo": 0, "preco": 165.0, "mg": 0, "descricao": "contém duas canecas alça branca, uma caixa craft, dois coador individual e um bilhete impresso.", "materiais": [{"nome": "canecas alça branca", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "coador individual", "qtd": 2}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós casal 12", "cat": "Avós", "custo": 0, "preco": 173.0, "mg": 0, "descricao": "contém duas canecas alça coração branca, uma caixa craft, duas tampas de bambu e um bilhete impresso.", "materiais": [{"nome": "canecas alça coração branca", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "tampas de bambu", "qtd": 2}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós solteiro 12", "cat": "Avós", "custo": 0, "preco": 93.0, "mg": 0, "descricao": "contém uma caneca alça coração, uma caixa craft, uma tampa de bambu e um bilhete impresso.", "materiais": [{"nome": "caneca alça coração", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "tampa de bambu", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Caneca unitária dindos com tampa de bambu", "cat": "Mimos", "custo": 0, "preco": 60.0, "mg": 0, "descricao": "Contém uma caneca e uma tampa de bambu.", "materiais": [{"nome": "caneca", "qtd": 1}, {"nome": "tampa de bambu", "qtd": 1}]}, {"nome": "Caneca unitária dindos alça coração", "cat": "Mimos", "custo": 0, "preco": 59.0, "mg": 0, "descricao": "Contém uma caneca com alça coração e interior colorido. (Possuímos outras cores disponíveis).", "materiais": [{"nome": "caneca com alça coração", "qtd": 1}, {"nome": "interior colorido", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 17", "cat": "Convite Dindos", "custo": 0, "preco": 179.0, "mg": 0, "descricao": "Contém uma caneca de café, uma caneca de cerveja em vidro, um porta retrato, uma caixa craft, uma vela e um convite impresso.", "materiais": [{"nome": "caneca de café", "qtd": 1}, {"nome": "caneca de cerveja em vidro", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "vela", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Kit avós solteiro 13", "cat": "Avós", "custo": 0, "preco": 88.0, "mg": 0, "descricao": "contém uma caneca alça coração, uma caixa craft, uma vela Santa e um bilhete impresso.", "materiais": [{"nome": "caneca alça coração", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "vela Santa", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós solteiro 14", "cat": "Avós", "custo": 0, "preco": 141.0, "mg": 0, "descricao": "contém uma caneca alça coração, uma caixa craft, um Body personalizado, uma vela no vidro e um bilhete impresso.", "materiais": [{"nome": "caneca alça coração", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "Body personalizado", "qtd": 1}, {"nome": "vela no vidro", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 18", "cat": "Convite Dindos", "custo": 0, "preco": 163.0, "mg": 0, "descricao": "Contém duas canecas com colher (possuímos outras cores disponíveis), uma caixa craft e um convite impresso.", "materiais": [{"nome": "canecas com colher (possuímos outras cores disponíveis)", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Vela coruja aromática", "cat": "Vela Lembrancinha", "custo": 0, "preco": 10.5, "mg": 0, "descricao": "Vela aromática Possuímos essências de mamãe e bebê, vanilla e lavanda. Acompanha a tag personalizada. Após a compra,chamar no watts para definir os detalhes.", "materiais": [{"nome": "a tag personalizada", "qtd": 1}]}, {"nome": "Kit avós casal 13", "cat": "Avós", "custo": 0, "preco": 130.0, "mg": 0, "descricao": "contém duas xícaras, uma caixa mdf um bilhete impresso.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "caixa mdf um bilhete impresso", "qtd": 1}]}, {"nome": "Mimo kit dindos monóculo e vela 04", "cat": "Vela Lembrancinha", "custo": 0, "preco": 31.0, "mg": 0, "descricao": "Contem um saco celofane, uma vela aromática e um monóculo.", "materiais": [{"nome": "saco celofane", "qtd": 1}, {"nome": "vela aromática", "qtd": 1}, {"nome": "monóculo", "qtd": 1}]}, {"nome": "Porta retrato unitário Vovó imã", "cat": "Avós", "custo": 0, "preco": 30.0, "mg": 0, "descricao": "Contém um porta retrato imã (três opções de frases para escolha). medida 9cmx7cm", "materiais": [{"nome": "porta retrato imã (três opções de frases para escolha)", "qtd": 1}]}, {"nome": "kit revelação gravidez 06", "cat": "Maternidade", "custo": 0, "preco": 104.0, "mg": 0, "descricao": "Contém um body personalizado, uma caixa mdf, um bilhete e um fio de led.", "materiais": [{"nome": "body personalizado", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "bilhete", "qtd": 1}, {"nome": "fio de led", "qtd": 1}]}, {"nome": "Dupla de xícaras com pires pai e mãe", "cat": "Dia das Mães", "custo": 0, "preco": 106.0, "mg": 0, "descricao": "Contém duas xícaras com pires.", "materiais": [{"nome": "xícaras com pires", "qtd": 2}]}, {"nome": "Dupla de xícaras com pires pai e mãe e coador", "cat": "Dia das Mães", "custo": 0, "preco": 131.0, "mg": 0, "descricao": "Contém duas xícaras com pires e um coador.", "materiais": [{"nome": "xícaras com pires", "qtd": 2}, {"nome": "coador", "qtd": 1}]}, {"nome": "kit canecas recem papais", "cat": "Maternidade", "custo": 0, "preco": 143.0, "mg": 0, "descricao": "Contém uma caneca alça coração, e uma caneca alça e interior colorido. Pode ser escolhido outras cores. E uma caixa craft.", "materiais": [{"nome": "caneca alça coração", "qtd": 1}, {"nome": "caneca alça", "qtd": 1}, {"nome": "interior colorido", "qtd": 1}]}, {"nome": "kit chegada maternidade", "cat": "Maternidade", "custo": 0, "preco": 209.0, "mg": 0, "descricao": "Contém um azulejo 20x20, uma caixa mdf, um fio de led, duas xícaras e dois pires.", "materiais": [{"nome": "azulejo 20x20", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "xícaras", "qtd": 2}, {"nome": "pires", "qtd": 2}]}, {"nome": "kit família chá de bebê", "cat": "Maternidade", "custo": 0, "preco": 179.0, "mg": 0, "descricao": "Contém uma caixa craft, duas xícaras e dois pires, um Body personalizado e um bilhete impresso.", "materiais": [{"nome": "caixa craft", "qtd": 1}, {"nome": "xícaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "Body personalizado", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 19", "cat": "Convite Dindos", "custo": 0, "preco": 192.0, "mg": 0, "descricao": "Contém duas xícaras, um fio de led, um porta retrato, uma vale urso, uma caixa mdf e um convite impresso.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "fio de led", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "vale urso", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 20", "cat": "Convite Dindos", "custo": 0, "preco": 144.0, "mg": 0, "descricao": "Contém duas xícaras, uma vela no vidro, uma caixa mdf e um convite impresso.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "vela no vidro", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Porta retrato unitário avós pezinho", "cat": "Avós", "custo": 0, "preco": 30.0, "mg": 0, "descricao": "Contém um porta retrato mesa (nove opções de frases para escolha). medida 9cmx7cm", "materiais": [{"nome": "porta retrato mesa (nove opções de frases para escolha)", "qtd": 1}]}, {"nome": "kit avós porta retrato na caixa", "cat": "Avós", "custo": 0, "preco": 69.0, "mg": 0, "descricao": "Contém um porta retrato mesa, um fio de led, um cartão e uma caixa mdf medida 10x11cm", "materiais": [{"nome": "porta retrato mesa", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "cartão", "qtd": 1}, {"nome": "caixa mdf medida 10x11cm", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 21", "cat": "Convite Dindos", "custo": 0, "preco": 115.0, "mg": 0, "descricao": "Contém duas canecas, uma caixa craft e um convite impresso.", "materiais": [{"nome": "canecas", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "kit Dindos porta retrato na caixa", "cat": "Mimos", "custo": 0, "preco": 54.0, "mg": 0, "descricao": "Contém um porta retrato mesa, um cartão e uma caixa mdf medida 10x11cm", "materiais": [{"nome": "porta retrato mesa", "qtd": 1}, {"nome": "cartão", "qtd": 1}, {"nome": "caixa mdf medida 10x11cm", "qtd": 1}]}, {"nome": "kit avós porta retrato na caixa sem led", "cat": "Avós", "custo": 0, "preco": 54.0, "mg": 0, "descricao": "Contém um porta retrato mesa, um cartão e uma caixa mdf medida 10x11cm", "materiais": [{"nome": "porta retrato mesa", "qtd": 1}, {"nome": "cartão", "qtd": 1}, {"nome": "caixa mdf medida 10x11cm", "qtd": 1}]}, {"nome": "globo com foto", "cat": "Mimos", "custo": 0, "preco": 75.0, "mg": 0, "descricao": "Contém um globo com foto. pode ir duas fotos e duas frases, até 4 palavras.", "materiais": [{"nome": "globo com foto", "qtd": 1}]}, {"nome": "Kit avós solteiro 16", "cat": "Avós", "custo": 0, "preco": 58.0, "mg": 0, "descricao": "contém uma xícara, uma caixa cristal e um bilhete impresso.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "caixa cristal", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Caneca de cerveja em vidro unitária", "cat": "Mimos", "custo": 0, "preco": 69.0, "mg": 0, "descricao": "Contém uma caneca de cerveja em vidro jateado.", "materiais": [{"nome": "caneca de cerveja em vidro jateado", "qtd": 1}]}, {"nome": "Caneca unitária", "cat": "Mimos", "custo": 0, "preco": 45.0, "mg": 0, "descricao": "Contém uma caneca.", "materiais": [{"nome": "caneca", "qtd": 1}]}, {"nome": "Caneca unitária com colher", "cat": "Mimos", "custo": 0, "preco": 69.0, "mg": 0, "descricao": "Contém uma caneca.", "materiais": [{"nome": "caneca", "qtd": 1}]}, {"nome": "Kit pai 01", "cat": "Mimos", "custo": 0, "preco": 86.0, "mg": 0, "descricao": "Contém uma xícara, um pires, uma vela no vidro, uma caixa craft e um bilhete impresso.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "pires", "qtd": 1}, {"nome": "vela no vidro", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit pai 04", "cat": "Mimos", "custo": 0, "preco": 127.0, "mg": 0, "descricao": "Contém uma caneca com alça e interior, uma caixa mdf, um coador individual e um bilhete impresso.", "materiais": [{"nome": "caneca com alça", "qtd": 1}, {"nome": "interior", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "coador individual", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit pai 05", "cat": "Mimos", "custo": 0, "preco": 156.0, "mg": 0, "descricao": "Contém uma uma caixa mdf, um fio de led, um globo, um monóculo, 4 fotos polaroide e um bilhete impresso.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "globo", "qtd": 1}, {"nome": "monóculo", "qtd": 1}, {"nome": "4 fotos polaroide", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit pai 06", "cat": "Mimos", "custo": 0, "preco": 142.0, "mg": 0, "descricao": "Contém uma uma caixa mdf, um fio de led, uma caneca com alça e interior colorida, um monóculo, duas fotos polaroide e um bilhete impresso.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "caneca com alça", "qtd": 1}, {"nome": "interior colorida", "qtd": 1}, {"nome": "monóculo", "qtd": 1}, {"nome": "fotos polaroide", "qtd": 2}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit pai 07", "cat": "Mimos", "custo": 0, "preco": 68.0, "mg": 0, "descricao": "Contém uma uma caixa cristal, uma caneca com alça e interior colorido e um bilhete impresso.", "materiais": [{"nome": "caixa cristal", "qtd": 1}, {"nome": "caneca com alça", "qtd": 1}, {"nome": "interior colorido", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "kit revelação gravidez 07", "cat": "Maternidade", "custo": 0, "preco": 78.0, "mg": 0, "descricao": "Contém um body personalizado, uma caixa craft e um bilhete impresso.", "materiais": [{"nome": "body personalizado", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Caneca unitária de cerveja", "cat": "Mimos", "custo": 0, "preco": 69.0, "mg": 0, "descricao": "Contém uma caneca em vidro.", "materiais": [{"nome": "caneca em vidro", "qtd": 1}]}, {"nome": "Xícara unitária", "cat": "Mimos", "custo": 0, "preco": 47.0, "mg": 0, "descricao": "Contém uma xícara.", "materiais": [{"nome": "xícara", "qtd": 1}]}, {"nome": "Monóculo", "cat": "Mimos", "custo": 0, "preco": 15.0, "mg": 0, "descricao": "Contém 1 monóculo personalizado.", "materiais": [{"nome": "1 monóculo personalizado", "qtd": 1}]}, {"nome": "Kit pai 08", "cat": "Mimos", "custo": 0, "preco": 56.0, "mg": 0, "descricao": "Contém uma uma caixa cristal, uma xicara e um bilhete impresso.", "materiais": [{"nome": "caixa cristal", "qtd": 1}, {"nome": "xicara", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós casal 15", "cat": "Avós", "custo": 0, "preco": 168.0, "mg": 0, "descricao": "contém duas canecas com tampa de bambu , uma caixa craft, um monóculo e um bilhete impresso.", "materiais": [{"nome": "canecas com tampa de bambu", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "monóculo", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit avós casal 16", "cat": "Avós", "custo": 0, "preco": 145.0, "mg": 0, "descricao": "contém duas xicaras, dois pires, uma caixa craft, uma vela no vidro e um bilhete impresso.", "materiais": [{"nome": "xicaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "vela no vidro", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit pai 09", "cat": "Mimos", "custo": 0, "preco": 115.0, "mg": 0, "descricao": "Contém uma uma caixa mdf, uma xícara, um coador individual e um bilhete impresso.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "xícara", "qtd": 1}, {"nome": "coador individual", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit pai 10", "cat": "Mimos", "custo": 0, "preco": 113.0, "mg": 0, "descricao": "Contém uma uma caixa mdf, uma caneca branca, um coador individual e um bilhete impresso.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "caneca branca", "qtd": 1}, {"nome": "coador individual", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit pai 11", "cat": "Mimos", "custo": 0, "preco": 127.0, "mg": 0, "descricao": "Contém uma uma caixa mdf, uma caneca com alça e interior colorido, um coador individual e um bilhete impresso.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "caneca com alça", "qtd": 1}, {"nome": "interior colorido", "qtd": 1}, {"nome": "coador individual", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit pai avô 12", "cat": "Mimos", "custo": 0, "preco": 133.0, "mg": 0, "descricao": "Contém uma uma caixa mdf, uma caneca com colher colorida, um coador individual e um bilhete impresso.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "caneca com colher colorida", "qtd": 1}, {"nome": "coador individual", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit pai 13", "cat": "Mimos", "custo": 0, "preco": 193.0, "mg": 0, "descricao": "Contém uma uma caixa mdf, uma caneca com tampa de bambu, um Body personalizado, um fio de led, um monóculo e um bilhete impresso.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "caneca com tampa de bambu", "qtd": 1}, {"nome": "Body personalizado", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "monóculo", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit pai 14", "cat": "Mimos", "custo": 0, "preco": 152.0, "mg": 0, "descricao": "Contém uma uma caixa mdf, uma caneca com alça e interior colorido, duas fotos polaroide, um fio de led, um coador individual e um bilhete impresso.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "caneca com alça", "qtd": 1}, {"nome": "interior colorido", "qtd": 1}, {"nome": "fotos polaroide", "qtd": 2}, {"nome": "fio de led", "qtd": 1}, {"nome": "coador individual", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Caixa mdf 20x20", "cat": "Mimos", "custo": 0, "preco": 49.0, "mg": 0, "descricao": "Contém 1 caixa personalizada mdf 20x20x10cm. Pode ir com a tampa lisa, nomes ou frase na tampa. Após a compra, chamar no watts, para definir os detalhes.", "materiais": [{"nome": "1 caixa personalizada mdf 20x20x10cm", "qtd": 1}]}, {"nome": "Fio de led", "cat": "Mimos", "custo": 0, "preco": 15.0, "mg": 0, "descricao": "Contém 1 fio de led, já inclui a pilha. Medida 2 metros. Ele é acionado por botão, podendo ser ligado e desligado.", "materiais": [{"nome": "1 fio de led", "qtd": 1}, {"nome": "já inclui a pilha", "qtd": 1}]}, {"nome": "Caixa mdf M 21x15", "cat": "Mimos", "custo": 0, "preco": 43.0, "mg": 0, "descricao": "Contém 1 caixa personalizada mdf 21x15x10cm. Pode ir com a tampa lisa, com nome ou frase até 6 palavras. Após a compra, chamar no WhatsApp para definirmos os detalhes.", "materiais": [{"nome": "1 caixa personalizada mdf 21x15x10cm", "qtd": 1}]}, {"nome": "Caixa acartonada P", "cat": "Mimos", "custo": 0, "preco": 49.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P. Diâmetro 13cm. Altura 10cm. Consultar cores das caixas e fitas. Após a compra, chamar no WhatsApp para definirmos os detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P", "qtd": 1}]}, {"nome": "Caixa mdf tampa acrilica com led", "cat": "Mimos", "custo": 0, "preco": 75.0, "mg": 0, "descricao": "Contém 1 caixa personalizada mdf com led. 20x20x9cm valor unitario Pode ir personalizada com nome ou frase até 6 palavras. Após a compra, chama no WhatsApp para definirmos os detalhes.", "materiais": [{"nome": "1 caixa personalizada mdf com led", "qtd": 1}]}, {"nome": "Xícara unitária com pires", "cat": "Mimos", "custo": 0, "preco": 53.0, "mg": 0, "descricao": "Contém uma xícara com pires", "materiais": [{"nome": "xícara com pires", "qtd": 1}]}, {"nome": "Caixa craft M", "cat": "Mimos", "custo": 0, "preco": 25.0, "mg": 0, "descricao": "Contém 1 caixa craft tamanho M. Acompanha top e cartão. Valor unitário por caixa. Consultar cores disponíveis das fitas. Após a compra, chamar no watts para definir os detalhes.", "materiais": [{"nome": "1 caixa craft tamanho M", "qtd": 1}]}, {"nome": "Caixa craft P", "cat": "Mimos", "custo": 0, "preco": 19.0, "mg": 0, "descricao": "Contém 1 caixa craft tamanho P. Acompanha top e cartão. Após a compra, chamar no WhatsApp para definir a cor do laço.", "materiais": [{"nome": "1 caixa craft tamanho P", "qtd": 1}]}, {"nome": "Cerveja corona vidro", "cat": "Mimos", "custo": 0, "preco": 12.0, "mg": 0, "descricao": "Cerveja Corona vidro. 210ml"}, {"nome": "Caixa cristal", "cat": "Mimos", "custo": 0, "preco": 9.0, "mg": 0, "descricao": "Contém 1 caixa cristal. 10x10x10cm Acompanha top e cartão.", "materiais": [{"nome": "1 caixa cristal", "qtd": 1}]}, {"nome": "Caixa mdf tampa fixa", "cat": "Mimos", "custo": 0, "preco": 36.0, "mg": 0, "descricao": "Contém 1 caixa personalizada mdf com tampa fixa. acompanha convite. Valor unitário por caixa. não acompanha itens da segunda foto", "materiais": [{"nome": "1 caixa personalizada mdf com tampa fixa", "qtd": 1}]}, {"nome": "Mini terço, Rosário, Dezena de pérola", "cat": "Mimos", "custo": 0, "preco": 4.0, "mg": 0, "descricao": "Contém 1 mini terço.", "materiais": [{"nome": "1 mini terço", "qtd": 1}]}, {"nome": "Barrinha nutella", "cat": "Mimos", "custo": 0, "preco": 12.0, "mg": 0, "descricao": "Contém 1 barrinha nutella.", "materiais": [{"nome": "1 barrinha nutella", "qtd": 1}]}, {"nome": "Caixa mdf 10x10", "cat": "Mimos", "custo": 0, "preco": 24.0, "mg": 0, "descricao": "Contém 1 caixa personalizada mdf 10x10 acompanha convite. Valor unitário. Pode ir personalizado com a inicial na tampa.", "materiais": [{"nome": "1 caixa personalizada mdf 10x10 acompanha convite", "qtd": 1}]}, {"nome": "Bolinho bauduco", "cat": "Mimos", "custo": 0, "preco": 5.0, "mg": 0, "descricao": "Contém 1 bolinho.", "materiais": [{"nome": "1 bolinho", "qtd": 1}]}, {"nome": "Café individual", "cat": "Mimos", "custo": 0, "preco": 5.0, "mg": 0, "descricao": "Contém 1 sachê de café.", "materiais": [{"nome": "1 sachê de café", "qtd": 1}]}, {"nome": "Mini espumante", "cat": "Mimos", "custo": 0, "preco": 36.0, "mg": 0, "descricao": "Contém 1 mini espumante.", "materiais": [{"nome": "1 mini espumante", "qtd": 1}]}, {"nome": "Trio de ferrero", "cat": "Mimos", "custo": 0, "preco": 24.0, "mg": 0, "descricao": "Contém 3 bombons ferreiro.", "materiais": [{"nome": "3 bombons ferreiro", "qtd": 1}]}, {"nome": "Barra de chocolate ferrero", "cat": "Mimos", "custo": 0, "preco": 45.0, "mg": 0, "descricao": "Contém 1 barra de chocolate ferreiro.", "materiais": [{"nome": "1 barra de chocolate ferreiro", "qtd": 1}]}, {"nome": "Caixa acartonada P com balão", "cat": "Balões", "custo": 0, "preco": 75.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 13cm. Altura 10cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}]}, {"nome": "Caneca unitária com alça e interno colorido", "cat": "Mimos", "custo": 0, "preco": 59.0, "mg": 0, "descricao": "Contém uma caneca com alça e interno colorido.", "materiais": [{"nome": "caneca com alça", "qtd": 1}, {"nome": "interno colorido", "qtd": 1}]}, {"nome": "Caixa mdf tampa recorte coração", "cat": "Mimos", "custo": 0, "preco": 69.0, "mg": 0, "descricao": "Contém 1 caixa personalizada mdf.", "materiais": [{"nome": "1 caixa personalizada mdf", "qtd": 1}]}, {"nome": "Caixa mdf P 16x15", "cat": "Mimos", "custo": 0, "preco": 36.0, "mg": 0, "descricao": "Contém 1 caixa personalizada mdf 16x15x10cm pode ir com a tampa lisa, nomes, ou frase até 6 palavras. Após a compra, chamar no WhatsApp para definir os detalhes.", "materiais": [{"nome": "1 caixa personalizada mdf 16x15x10cm pode ir com a tampa lisa", "qtd": 1}, {"nome": "nomes", "qtd": 1}, {"nome": "ou frase até 6 palavras", "qtd": 1}]}, {"nome": "coador individual", "cat": "Mimos", "custo": 0, "preco": 25.0, "mg": 0, "descricao": "Contém 1 coador inidividual.", "materiais": [{"nome": "1 coador inidividual", "qtd": 1}]}, {"nome": "Vela vidro 70gr", "cat": "Vela Lembrancinha", "custo": 0, "preco": 36.0, "mg": 0, "descricao": "Vela aromática Possuímos essências de mamãe e bebê, vanilla e lavanda. Acompanha a tag personalizada. Após a compra,chamar no watts para definir os detalhes.", "materiais": [{"nome": "a tag personalizada", "qtd": 1}]}, {"nome": "Convite mimo vela vidro 70gr", "cat": "Vela Lembrancinha", "custo": 0, "preco": 48.0, "mg": 0, "descricao": "Contém uma vela aromática, uma caixa craft e um convite impresso. Possuímos essências de mamãe e bebê, vanilla e lavanda. Acompanha a tag personalizada. Após a compra,chamar no watts para definir os detalhes.", "materiais": [{"nome": "vela aromática", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 22", "cat": "Convite Dindos", "custo": 0, "preco": 195.0, "mg": 0, "descricao": "Contém duas canecas, uma caixa mdf com tampa acrílica, um porta retrato polaroide, um fio de led e um convite impresso. Após a compra, definimos por watts a personalização.", "materiais": [{"nome": "canecas", "qtd": 2}, {"nome": "caixa mdf com tampa acrílica", "qtd": 1}, {"nome": "porta retrato polaroide", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "kit recém mamãe", "cat": "Maternidade", "custo": 0, "preco": 91.0, "mg": 0, "descricao": "Contém uma caixa mdf, uma caneca branca, uma vela urso e um bilhete impresso.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "caneca branca", "qtd": 1}, {"nome": "vela urso", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Arranjo de mesa 60cm com led", "cat": "Balões", "custo": 0, "preco": 109.0, "mg": 0, "descricao": "Após a compra, clique no botão de WhatsApp para enviar suas informações de personalização. Pode ser personalizado com outras cores e escrita. Incluso o fio de led. Pode retirar no local ou entregamos com taxa em POA e Grande POA."}, {"nome": "Arranjo de mesa 60cm", "cat": "Balões", "custo": 0, "preco": 94.0, "mg": 0, "descricao": "Após a compra, clique no botão de WhatsApp para enviar suas informações de personalização. Pode ser personalizado com outras cores e escrita. Pode retirar no local ou entregamos com taxa em POA e Grande POA."}, {"nome": "Arranjo de mesa formatura 40cm", "cat": "Balões", "custo": 0, "preco": 61.0, "mg": 0, "descricao": "Após a compra, clique no botão de WhatsApp para enviar suas informações de personalização. Valor unitário. Pode ser personalizado com outras cores e escrita. Pode retirar no local ou entregamos com taxa em POA e Grande POA."}, {"nome": "Kit namorados 1", "cat": "Mimos", "custo": 0, "preco": 144.0, "mg": 0, "descricao": "Contém uma caneca com colher, uma caixa mdf com tampa acrílica coração, uma barrinha de nutella, um café individual, um bolinho e um cartão.", "materiais": [{"nome": "caneca com colher", "qtd": 1}, {"nome": "caixa mdf com tampa acrílica coração", "qtd": 1}, {"nome": "barrinha de nutella", "qtd": 1}, {"nome": "café individual", "qtd": 1}, {"nome": "bolinho", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit namorados 2", "cat": "Mimos", "custo": 0, "preco": 200.0, "mg": 0, "descricao": "Contém duas xícaras com pires, uma caixa mdf, um fio de led, um porta retrato polaroide e um cartão.", "materiais": [{"nome": "xícaras com pires", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "porta retrato polaroide", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit namorados 3", "cat": "Mimos", "custo": 0, "preco": 127.0, "mg": 0, "descricao": "Contém uma xícara com pires, uma caixa mdf, um fio de led, um bolinho, um café individual e um cartão.", "materiais": [{"nome": "xícara com pires", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "bolinho", "qtd": 1}, {"nome": "café individual", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit revelação irmãos", "cat": "Maternidade", "custo": 0, "preco": 143.0, "mg": 0, "descricao": "Contém uma uma caixa mdf, um Body personalizado, um fio de led, dois monóculos e um bilhete impresso.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "Body personalizado", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "monóculos", "qtd": 2}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "kit revelação gravidez 08", "cat": "Maternidade", "custo": 0, "preco": 125.0, "mg": 0, "descricao": "Contém um body personalizado, uma caixa mdf tenho uma surpresa, um fio de led, uma vela urso, duas fotos polaroide impressa.", "materiais": [{"nome": "body personalizado", "qtd": 1}, {"nome": "caixa mdf tenho uma surpresa", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "vela urso", "qtd": 1}, {"nome": "fotos polaroide impressa", "qtd": 2}]}, {"nome": "Arranjo de mesa 40cm", "cat": "Balões", "custo": 0, "preco": 49.0, "mg": 0, "descricao": "Após a compra, clique no botão de WhatsApp para enviar suas informações de personalização. Valor unitário. Pode ser personalizado com outras cores e escrita. Pode retirar no local ou entregamos com taxa em POA e Grande POA."}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 12", "cat": "Convite Dindos", "custo": 0, "preco": 94.0, "mg": 0, "descricao": "Contém uma caneca alça branca, uma caixa craft, um porta retrato e um convite.", "materiais": [{"nome": "caneca alça branca", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 23", "cat": "Convite Dindos", "custo": 0, "preco": 173.0, "mg": 0, "descricao": "Contém uma caneca de cerveja, uma caneca branca, uma caixa mdf, duas velas urso e um convite impresso. Após a compra, definimos por watts a personalização.", "materiais": [{"nome": "caneca de cerveja", "qtd": 1}, {"nome": "caneca branca", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "velas urso", "qtd": 2}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 24", "cat": "Convite Dindos", "custo": 0, "preco": 187.0, "mg": 0, "descricao": "Contém uma caneca de cerveja, uma xícara com pires, uma caixa craft, uma vela urso, um porta retrato e um convite impresso. Após a compra, definimos por watts a personalização.", "materiais": [{"nome": "caneca de cerveja", "qtd": 1}, {"nome": "xícara com pires", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "vela urso", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Vela lata aromática 20gr", "cat": "Vela Lembrancinha", "custo": 0, "preco": 9.5, "mg": 0, "descricao": "Vela aromática 20gr. Possuímos essências de mamãe e bebê, vanilla e lavanda. Acompanha a tag personalizada. Após a compra, chamar no watts para definir os detalhes.", "materiais": [{"nome": "a tag personalizada", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 25", "cat": "Convite Dindos", "custo": 0, "preco": 187.0, "mg": 0, "descricao": "Contém duas canecas com colher, uma caixa mdf e um convite impresso. Após a compra, definimos por watts a personalização.", "materiais": [{"nome": "canecas com colher", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 13", "cat": "Convite Dindos", "custo": 0, "preco": 148.0, "mg": 0, "descricao": "Contém uma caneca alça branca, uma caixa acartonada branca, uma tampa de bambu, um porta retrato e um convite.", "materiais": [{"nome": "caneca alça branca", "qtd": 1}, {"nome": "caixa acartonada branca", "qtd": 1}, {"nome": "tampa de bambu", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 14", "cat": "Convite Dindos", "custo": 0, "preco": 88.0, "mg": 0, "descricao": "Contém uma caneca cerveja em vidro, uma caixa craft e um convite.", "materiais": [{"nome": "caneca cerveja em vidro", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 26", "cat": "Convite Dindos", "custo": 0, "preco": 163.0, "mg": 0, "descricao": "Contém duas canecas cerveja em vidro, uma caixa craft e um convite impresso. Após a compra, definimos por watts a personalização.", "materiais": [{"nome": "canecas cerveja em vidro", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "kit revelação gravidez 09", "cat": "Maternidade", "custo": 0, "preco": 121.0, "mg": 0, "descricao": "Contém um body personalizado, uma caixa craft, uma xícara, um bilhete impresso.", "materiais": [{"nome": "body personalizado", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "xícara", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 15", "cat": "Convite Dindos", "custo": 0, "preco": 79.0, "mg": 0, "descricao": "Contém uma caneca com tampa de bambu, uma caixa craft e um convite.", "materiais": [{"nome": "caneca com tampa de bambu", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Vela lata aromática 20gr com terço", "cat": "Vela Lembrancinha", "custo": 0, "preco": 13.5, "mg": 0, "descricao": "Vela aromática 20gr. Possuímos essências de mamãe e bebê, vanilla e lavanda. Acompanha a tag personalizada. Após a compra, chamar no watts para definir os detalhes.", "materiais": [{"nome": "a tag personalizada", "qtd": 1}]}, {"nome": "Kit formatura 08", "cat": "Formatura", "custo": 0, "preco": 176.0, "mg": 0, "descricao": "contém uma caixa com balão e capelo, uma mini espumante, uma barra de ferreiro e um trio de bombons ferreiro.", "materiais": [{"nome": "caixa com balão", "qtd": 1}, {"nome": "capelo", "qtd": 1}, {"nome": "mini espumante", "qtd": 1}, {"nome": "barra de ferreiro", "qtd": 1}, {"nome": "trio de bombons ferreiro", "qtd": 1}]}, {"nome": "Kit formatura 09", "cat": "Formatura", "custo": 0, "preco": 139.0, "mg": 0, "descricao": "contém uma caixa com balão, uma barra de chocolate 80gr, um pacote de chocolate 40gr, um pote de nutella, um café individual e um pacote de biscoito.", "materiais": [{"nome": "caixa com balão", "qtd": 1}, {"nome": "barra de chocolate 80gr", "qtd": 1}, {"nome": "pacote de chocolate 40gr", "qtd": 1}, {"nome": "pote de nutella", "qtd": 1}, {"nome": "café individual", "qtd": 1}, {"nome": "pacote de biscoito", "qtd": 1}]}, {"nome": "Kit formatura 10", "cat": "Formatura", "custo": 0, "preco": 209.0, "mg": 0, "descricao": "contém uma caixa com balão e capelo, uma barra de chocolate 80gr, um pacote de chocolate 40gr, um pote de nutella, um café individual, um pacote de biscoito e uma caneca com alça coração. Após a compra, favor chamar no watts para definir cores e personalização.", "materiais": [{"nome": "caixa com balão", "qtd": 1}, {"nome": "capelo", "qtd": 1}, {"nome": "barra de chocolate 80gr", "qtd": 1}, {"nome": "pacote de chocolate 40gr", "qtd": 1}, {"nome": "pote de nutella", "qtd": 1}, {"nome": "café individual", "qtd": 1}, {"nome": "pacote de biscoito", "qtd": 1}, {"nome": "caneca com alça coração", "qtd": 1}]}, {"nome": "Arranjo de número", "cat": "Balões", "custo": 0, "preco": 69.0, "mg": 0, "descricao": "Após a compra, clique no botão de WhatsApp para enviar suas informações de personalização. Valor unitário. Pode ser personalizado com outras cores e escrita. Pode retirar no local ou entregamos com taxa em POA e Grande POA."}, {"nome": "Kit formatura 11", "cat": "Formatura", "custo": 0, "preco": 167.0, "mg": 0, "descricao": "contém uma caixa com balão e capelo, 2 pacotes de bombom ferreiro com 3 unidades, um pacote de biscoito e uma mino espumante. Após a compra, favor chamar no watts para definir cores e personalização.", "materiais": [{"nome": "caixa com balão", "qtd": 1}, {"nome": "capelo", "qtd": 1}, {"nome": "2 pacotes de bombom ferreiro com 3 unidades", "qtd": 1}, {"nome": "pacote de biscoito", "qtd": 1}, {"nome": "mino espumante", "qtd": 1}]}, {"nome": "Caixa acartonada M com balão", "cat": "Balões", "custo": 0, "preco": 85.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 17cm . Altura 12cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}]}, {"nome": "Caixa personalizada 01", "cat": "Mimos", "custo": 0, "preco": 146.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado, 3 bombons ferreiro, 3 cerveja Corona e 1 pacote de biscoito salgado. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 17cm . Altura 12cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}, {"nome": "3 bombons ferreiro", "qtd": 1}, {"nome": "3 cerveja Corona", "qtd": 1}, {"nome": "1 pacote de biscoito salgado", "qtd": 1}]}, {"nome": "Caixa personalizada 02", "cat": "Mimos", "custo": 0, "preco": 235.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado, 3 bombons ferreiro, 1 mini espumante, 1 barra de chocolate e 1 caneca com alça coração. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 17cm . Altura 12cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}, {"nome": "3 bombons ferreiro", "qtd": 1}, {"nome": "1 mini espumante", "qtd": 1}, {"nome": "1 barra de chocolate", "qtd": 1}, {"nome": "1 caneca com alça coração", "qtd": 1}]}, {"nome": "Caixa personalizada 03", "cat": "Mimos", "custo": 0, "preco": 214.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada M com balão personalizado, 1 bolo, 1 pacote de biscoito salgado, 1 pacote de chocolate 40gr, 1 café individual, 1 outro branco tubete, 1 bombom ouro branco, 1 pote de nutella e 1 xícara personalizada. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 17cm . Altura 12cm. Após a compra chamar no watts para definir", "materiais": [{"nome": "1 caixa personalizada acartonada M com balão personalizado", "qtd": 1}, {"nome": "1 bolo", "qtd": 1}, {"nome": "1 pacote de biscoito salgado", "qtd": 1}, {"nome": "1 pacote de chocolate 40gr", "qtd": 1}, {"nome": "1 café individual", "qtd": 1}, {"nome": "1 outro branco tubete", "qtd": 1}, {"nome": "1 bombom ouro branco", "qtd": 1}, {"nome": "1 pote de nutella", "qtd": 1}, {"nome": "1 xícara personalizada", "qtd": 1}]}, {"nome": "Caixa personalizada 04", "cat": "Mimos", "custo": 0, "preco": 149.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado, 1 foto polaroide, 1 cerveja Corona e 1 caneca personalizada. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 13cm . Altura 10cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}, {"nome": "1 foto polaroide", "qtd": 1}, {"nome": "1 cerveja Corona", "qtd": 1}, {"nome": "1 caneca personalizada", "qtd": 1}]}, {"nome": "Caixa personalizada 05", "cat": "Mimos", "custo": 0, "preco": 166.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado, e cervejas coronas, 2 pacotes de biscoito salgado e 1 barra de chocolate ferrero. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 13cm . Altura 10cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}, {"nome": "cervejas coronas", "qtd": 1}, {"nome": "2 pacotes de biscoito salgado", "qtd": 1}, {"nome": "1 barra de chocolate ferrero", "qtd": 1}]}, {"nome": "Caixa personalizada 06", "cat": "Mimos", "custo": 0, "preco": 228.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada M, 1 taça de espumante, 1 vela no vidro, 1 barra de chocolate ferrero, 1 mini espumante e 1 caixa com 9 bombons ferrero. Consultar cores disponíveis das caixas. A escrita na caixa vai personalizada. Diâmetro 17cm . Altura 12cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada M", "qtd": 1}, {"nome": "1 taça de espumante", "qtd": 1}, {"nome": "1 vela no vidro", "qtd": 1}, {"nome": "1 barra de chocolate ferrero", "qtd": 1}, {"nome": "1 mini espumante", "qtd": 1}, {"nome": "1 caixa com 9 bombons ferrero", "qtd": 1}]}, {"nome": "Caixa personalizada 07", "cat": "Mimos", "custo": 0, "preco": 167.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada M, 1 caneca alça coração, 1 pacote de chocolate 40gr, 1 fio de led, 1 barra de nutella e 1 vela vidro. Consultar cores disponíveis das caixas. A escrita na caixa vai personalizada. Diâmetro 17cm . Altura 12cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada M", "qtd": 1}, {"nome": "1 caneca alça coração", "qtd": 1}, {"nome": "1 pacote de chocolate 40gr", "qtd": 1}, {"nome": "1 fio de led", "qtd": 1}, {"nome": "1 barra de nutella", "qtd": 1}, {"nome": "1 vela vidro", "qtd": 1}]}, {"nome": "Caixa personalizada 08", "cat": "Mimos", "custo": 0, "preco": 139.0, "mg": 0, "descricao": "Contém 1 baldinho personalizado, 1 balão personalizado, 1 caneca com alça colorida, 1 pacote de ruffles, 1 kinder Bueno e 1 pacote de chocolate 40gr. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 baldinho personalizado", "qtd": 1}, {"nome": "1 balão personalizado", "qtd": 1}, {"nome": "1 caneca com alça colorida", "qtd": 1}, {"nome": "1 pacote de ruffles", "qtd": 1}, {"nome": "1 kinder Bueno", "qtd": 1}, {"nome": "1 pacote de chocolate 40gr", "qtd": 1}]}, {"nome": "Caixa personalizada 09", "cat": "Mimos", "custo": 0, "preco": 127.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado, 2 cervejas coronas e 1 caixa com 4 ferreiros. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 13cm . Altura 10cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}, {"nome": "2 cervejas coronas", "qtd": 1}, {"nome": "1 caixa com 4 ferreiros", "qtd": 1}]}, {"nome": "Caixa personalizada 10", "cat": "Mimos", "custo": 0, "preco": 155.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado, 1 pacote de chocolate stikadinho, 2 pacotes de bala fini, 1 bolinho, 1 suco e 1 pote de nutella. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 13cm . Altura 10cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}, {"nome": "1 pacote de chocolate stikadinho", "qtd": 1}, {"nome": "2 pacotes de bala fini", "qtd": 1}, {"nome": "1 bolinho", "qtd": 1}, {"nome": "1 suco", "qtd": 1}, {"nome": "1 pote de nutella", "qtd": 1}]}, {"nome": "Caixa personalizada 11", "cat": "Mimos", "custo": 0, "preco": 155.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado, 2 pacotes de chocolate 40gr, 1 pacote de bala fini, 1 barrinha de nutella, 1 pacote de mms, 1 suco e 1 pote de nutella. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 13cm . Altura 10cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}, {"nome": "2 pacotes de chocolate 40gr", "qtd": 1}, {"nome": "1 pacote de bala fini", "qtd": 1}, {"nome": "1 barrinha de nutella", "qtd": 1}, {"nome": "1 pacote de mms", "qtd": 1}, {"nome": "1 suco", "qtd": 1}, {"nome": "1 pote de nutella", "qtd": 1}]}, {"nome": "Caixa personalizada 12", "cat": "Mimos", "custo": 0, "preco": 148.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado, 1 cerveja Corona, 1 caixa com 8 bombons ferrero e 5 bombons ouro branco. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 13cm . Altura 10cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}, {"nome": "1 cerveja Corona", "qtd": 1}, {"nome": "1 caixa com 8 bombons ferrero", "qtd": 1}, {"nome": "5 bombons ouro branco", "qtd": 1}]}, {"nome": "Caixa personalizada 13", "cat": "Mimos", "custo": 0, "preco": 179.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado, 1 barra de chocolate ferrero, 1 pacote de biscoito salgado, 1 pacote de chocolate 40gr, 1 café individual, 1 barrinha de nutella e 1 pote de nutella. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 13cm . Altura 10cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}, {"nome": "1 barra de chocolate ferrero", "qtd": 1}, {"nome": "1 pacote de biscoito salgado", "qtd": 1}, {"nome": "1 pacote de chocolate 40gr", "qtd": 1}, {"nome": "1 café individual", "qtd": 1}, {"nome": "1 barrinha de nutella", "qtd": 1}, {"nome": "1 pote de nutella", "qtd": 1}]}, {"nome": "Caixa personalizada 14", "cat": "Mimos", "custo": 0, "preco": 177.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado, 1 pacote de biscoito doce, 1 Kinder bueno, 1 café individual, 1 pacote de chocolate 40gr e 1 caneca alça coração personalizada. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 13cm . Altura 10cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}, {"nome": "1 pacote de biscoito doce", "qtd": 1}, {"nome": "1 Kinder bueno", "qtd": 1}, {"nome": "1 café individual", "qtd": 1}, {"nome": "1 pacote de chocolate 40gr", "qtd": 1}, {"nome": "1 caneca alça coração personalizada", "qtd": 1}]}, {"nome": "Caixa personalizada 15", "cat": "Mimos", "custo": 0, "preco": 163.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado, 1 pacote de amendoim, 1 cerveja Corona, 1 barra de chocolate, 1 pacote de chocolate 40gr, 4 bombons ferrero e 4 fotos impressa polaridade. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 13cm . Altura 10cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}, {"nome": "1 pacote de amendoim", "qtd": 1}, {"nome": "1 cerveja Corona", "qtd": 1}, {"nome": "1 barra de chocolate", "qtd": 1}, {"nome": "1 pacote de chocolate 40gr", "qtd": 1}, {"nome": "4 bombons ferrero", "qtd": 1}, {"nome": "4 fotos impressa polaridade", "qtd": 1}]}, {"nome": "Caixa personalizada 16", "cat": "Mimos", "custo": 0, "preco": 159.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado, 1 pacote de biscoito doce, 1 pacote de chocolate 40gr, 1 barra de chocolate, 1 café individual e 1 xícara. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 13cm . Altura 10cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}, {"nome": "1 pacote de biscoito doce", "qtd": 1}, {"nome": "1 pacote de chocolate 40gr", "qtd": 1}, {"nome": "1 barra de chocolate", "qtd": 1}, {"nome": "1 café individual", "qtd": 1}, {"nome": "1 xícara", "qtd": 1}]}, {"nome": "Caixa personalizada 17", "cat": "Mimos", "custo": 0, "preco": 168.0, "mg": 0, "descricao": "Contém 1 caixa personalizada acartonada P com balão personalizado, 1 pacote de chocolate 40gr, 1 chocolate trento, 1 bolinho, 2 polaroides e 1 xícara. Consultar cores disponíveis das caixas e balões. A escrita no balão vai personalizada. Diâmetro 13cm . Altura 10cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa personalizada acartonada P com balão personalizado", "qtd": 1}, {"nome": "1 pacote de chocolate 40gr", "qtd": 1}, {"nome": "1 chocolate trento", "qtd": 1}, {"nome": "1 bolinho", "qtd": 1}, {"nome": "2 polaroides", "qtd": 1}, {"nome": "1 xícara", "qtd": 1}]}, {"nome": "Porta retrato ABC", "cat": "Mimos", "custo": 0, "preco": 35.0, "mg": 0, "descricao": "Contém 1 Porta retrato Abc, já acompanha foto. valor Unitário. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 Porta retrato Abc", "qtd": 1}, {"nome": "já acompanha foto", "qtd": 1}]}, {"nome": "Caixa mdf ABC com led", "cat": "Mimos", "custo": 0, "preco": 59.0, "mg": 0, "descricao": "Contém 1 caixa mdf ABC e 1 fio de led. valor Unitário. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa mdf ABC", "qtd": 1}, {"nome": "1 fio de led", "qtd": 1}]}, {"nome": "Caixa mdf ABC com porta retrato", "cat": "Mimos", "custo": 0, "preco": 115.0, "mg": 0, "descricao": "Contém 1 caixa mdf ABC, 1 fio de led, 1 porta retrato, 1 pacote de chocolate 40g, 1 foto e 1 pacote de bala 20gr. valor Unitário. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa mdf ABC", "qtd": 1}, {"nome": "1 fio de led", "qtd": 1}, {"nome": "1 porta retrato", "qtd": 1}, {"nome": "1 pacote de chocolate 40g", "qtd": 1}, {"nome": "1 foto", "qtd": 1}, {"nome": "1 pacote de bala 20gr", "qtd": 1}]}, {"nome": "Caixa formatura PP", "cat": "Formatura", "custo": 0, "preco": 144.0, "mg": 0, "descricao": "Contém 1 caixa acartonada Pp, 1 balão personalizado, 1 pacote de bala, 1 pacote de chocolate 40gr, 1 pacote de disquete, 1 pote de nutella e 1 bombom valor Unitário. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa acartonada Pp", "qtd": 1}, {"nome": "1 balão personalizado", "qtd": 1}, {"nome": "1 pacote de bala", "qtd": 1}, {"nome": "1 pacote de chocolate 40gr", "qtd": 1}, {"nome": "1 pacote de disquete", "qtd": 1}, {"nome": "1 pote de nutella", "qtd": 1}, {"nome": "1 bombom valor Unitário", "qtd": 1}]}, {"nome": "Caixa capelo formatura P", "cat": "Formatura", "custo": 0, "preco": 175.0, "mg": 0, "descricao": "Contém 1 caixa acartonada P, 1 balão personalizado, 1 pacote de bala, 1 pacote de chocolate 40gr, 1 pote de nutella, 1 pacote de disquete e 1 porta retrato. valor Unitário. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa acartonada P", "qtd": 1}, {"nome": "1 balão personalizado", "qtd": 1}, {"nome": "1 pacote de bala", "qtd": 1}, {"nome": "1 pacote de chocolate 40gr", "qtd": 1}, {"nome": "1 pote de nutella", "qtd": 1}, {"nome": "1 pacote de disquete", "qtd": 1}, {"nome": "1 porta retrato", "qtd": 1}]}, {"nome": "Arranjo balão mesa 40cm", "cat": "Balões", "custo": 0, "preco": 49.0, "mg": 0, "descricao": "Contém 1 arranjo de balão 40cm. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 arranjo de balão 40cm", "qtd": 1}]}, {"nome": "Caixa capelo com porta retrato", "cat": "Mimos", "custo": 0, "preco": 108.0, "mg": 0, "descricao": "Contém 1 caixa capelo, 1 porta retrato, 1 foto e 1 kinder Bueno. valor cada caixa Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa capelo", "qtd": 1}, {"nome": "1 porta retrato", "qtd": 1}, {"nome": "1 foto", "qtd": 1}, {"nome": "1 kinder Bueno", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 16", "cat": "Convite Dindos", "custo": 0, "preco": 90.0, "mg": 0, "descricao": "Contém uma xícara, uma caixa mdf e um convite. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte e convite.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 17", "cat": "Convite Dindos", "custo": 0, "preco": 110.0, "mg": 0, "descricao": "Contém uma xícara, uma caixa mdf e um convite. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte e convite.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 27", "cat": "Convite Dindos", "custo": 0, "preco": 130.0, "mg": 0, "descricao": "Contém duas xícaras, uma caixa mdf e um convite impresso. Após a compra, definimos por watts a personalização.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 18", "cat": "Convite Dindos", "custo": 0, "preco": 110.0, "mg": 0, "descricao": "Contém uma xícara, um pires, uma caixa mdf, uma vela vidro e um convite. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte e convite.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "pires", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "vela vidro", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 19", "cat": "Convite Dindos", "custo": 0, "preco": 97.0, "mg": 0, "descricao": "Contém uma xícara, uma caixa mdf, uma vela vidro e um convite. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte e convite.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "vela vidro", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 28", "cat": "Convite Dindos", "custo": 0, "preco": 140.0, "mg": 0, "descricao": "Contém duas xícaras, uma caixa mdf, uma vela urso e um convite impresso. Após a compra, definimos por watts a personalização.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "vela urso", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 20", "cat": "Convite Dindos", "custo": 0, "preco": 93.0, "mg": 0, "descricao": "Contém uma xícara, uma caixa mdf, uma vela urso e um convite. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte e convite.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "vela urso", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "Convite para Dindo Padrinho Batismo Solteiro 21", "cat": "Convite Dindos", "custo": 0, "preco": 91.0, "mg": 0, "descricao": "Contém uma caneca, uma caixa mdf, uma vela urso e um convite. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte e convite.", "materiais": [{"nome": "caneca", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "vela urso", "qtd": 1}, {"nome": "convite", "qtd": 1}]}, {"nome": "entrega", "cat": "Mimos", "custo": 0, "preco": 15.0, "mg": 0, "descricao": "Valores da entrega a combinar por WhatsApp."}, {"nome": "Kit dia dos professores 01", "cat": "Mimos", "custo": 0, "preco": 72.0, "mg": 0, "descricao": "Contém uma xícara, um pires, uma caixa craft e um bilhete. Possuímos mais de 20 opções de estampas para dia dos professores. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "pires", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit dia dos professores 02", "cat": "Mimos", "custo": 0, "preco": 21.5, "mg": 0, "descricao": "Contém uma vela aromática em formato de coruja, um bombom ouro branco, uma caixa e um bilhete.", "materiais": [{"nome": "vela aromática em formato de coruja", "qtd": 1}, {"nome": "bombom ouro branco", "qtd": 1}, {"nome": "caixa", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit dia dos professores 03", "cat": "Mimos", "custo": 0, "preco": 48.0, "mg": 0, "descricao": "Contém uma vela aromática em vidro, um bombom ouro branco, uma caixa, um marca página e um bilhete.", "materiais": [{"nome": "vela aromática em vidro", "qtd": 1}, {"nome": "bombom ouro branco", "qtd": 1}, {"nome": "caixa", "qtd": 1}, {"nome": "marca página", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit dia dos professores 04", "cat": "Mimos", "custo": 0, "preco": 27.5, "mg": 0, "descricao": "Contém uma vela aromática em formato de coruja, um bombom ouro branco, uma caixa, e um bilhete.", "materiais": [{"nome": "vela aromática em formato de coruja", "qtd": 1}, {"nome": "bombom ouro branco", "qtd": 1}, {"nome": "caixa", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit dia dos professores 05", "cat": "Mimos", "custo": 0, "preco": 127.0, "mg": 0, "descricao": "Contém uma caneca com alça e interior colorido, um coador individual, uma caixa mdf, e um bilhete. Possuímos mais de 20 opções de estampas para dia dos professores. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte.", "materiais": [{"nome": "caneca com alça", "qtd": 1}, {"nome": "interior colorido", "qtd": 1}, {"nome": "coador individual", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit dia dos professores 06", "cat": "Mimos", "custo": 0, "preco": 119.0, "mg": 0, "descricao": "Contém uma caneca com alça coração e interior colorido, um marca página, uma caixa mdf, e um bilhete. Possuímos mais de 20 opções de estampas para dia dos professores. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte.", "materiais": [{"nome": "caneca com alça coração", "qtd": 1}, {"nome": "interior colorido", "qtd": 1}, {"nome": "marca página", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit dia dos professores 08", "cat": "Mimos", "custo": 0, "preco": 82.5, "mg": 0, "descricao": "Contém uma xícara, um pires, uma vela aromática em formato de coruja, uma caixa craft e um bilhete. Possuímos mais de 20 opções de estampas para dia dos professores. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "pires", "qtd": 1}, {"nome": "vela aromática em formato de coruja", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit dia dos professores 07", "cat": "Mimos", "custo": 0, "preco": 113.0, "mg": 0, "descricao": "Contém uma caneca, um coador individual, uma caixa mdf, e um bilhete. Possuímos mais de 20 opções de estampas para dia dos professores. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte.", "materiais": [{"nome": "caneca", "qtd": 1}, {"nome": "coador individual", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Caneca branca Dia dos professores", "cat": "Mimos", "custo": 0, "preco": 45.0, "mg": 0, "descricao": "Contém uma caneca e um bilhete. Possuímos mais de 20 opções de estampas para dia dos professores. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte.", "materiais": [{"nome": "caneca", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Caneca alça coração rosa Dia dos professores", "cat": "Mimos", "custo": 0, "preco": 59.0, "mg": 0, "descricao": "Contém uma caneca alça coração e um bilhete. Possuímos mais de 20 opções de estampas para dia dos professores. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte.", "materiais": [{"nome": "caneca alça coração", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Xícara com interno vermelho Dia dos professores", "cat": "Mimos", "custo": 0, "preco": 49.0, "mg": 0, "descricao": "Contém uma xícara com interno vermelho e um bilhete. Possuímos mais de 20 opções de estampas para dia dos professores. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte.", "materiais": [{"nome": "xícara com interno vermelho", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Xícara com interno rosa Dia dos professores", "cat": "Mimos", "custo": 0, "preco": 49.0, "mg": 0, "descricao": "Contém uma xícara com interno rosa e um bilhete. Possuímos mais de 20 opções de estampas para dia dos professores. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte.", "materiais": [{"nome": "xícara com interno rosa", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Xícara com pires Dia dos professores", "cat": "Mimos", "custo": 0, "preco": 53.0, "mg": 0, "descricao": "Contém uma xícara, um pires e um bilhete. Possuímos mais de 20 opções de estampas para dia dos professores. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "pires", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Caneca alça coração lilas Dia dos professores", "cat": "Mimos", "custo": 0, "preco": 59.0, "mg": 0, "descricao": "Contém uma caneca alça coração e um bilhete. Possuímos mais de 20 opções de estampas para dia dos professores. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte.", "materiais": [{"nome": "caneca alça coração", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Caneca alça e interno preto Dia dos professores", "cat": "Mimos", "custo": 0, "preco": 59.0, "mg": 0, "descricao": "Contém uma caneca alça e interno preto e um bilhete. Possuímos mais de 20 opções de estampas para dia dos professores. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte.", "materiais": [{"nome": "caneca alça", "qtd": 1}, {"nome": "interno preto", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Caneca com tampa de bambu Dia dos professores", "cat": "Mimos", "custo": 0, "preco": 69.0, "mg": 0, "descricao": "Contém uma caneca, uma tampa de bambu e um bilhete. Possuímos mais de 20 opções de estampas para dia dos professores. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte.", "materiais": [{"nome": "caneca", "qtd": 1}, {"nome": "tampa de bambu", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Caixa mdf", "cat": "Mimos", "custo": 0, "preco": 43.0, "mg": 0, "descricao": "Contém uma caixa mdf 21x15x10. Após a compra, chamar no WhatsApp para definirmos os detalhes da arte.", "materiais": [{"nome": "caixa mdf 21x15x10", "qtd": 1}]}, {"nome": "Vela unitária vidro", "cat": "Vela Lembrancinha", "custo": 0, "preco": 14.0, "mg": 0, "descricao": "Vela aromática, vidro 20gr. Possuímos opções de aromas. valor R 14,00. Após a compra, chamar no WhatsApp para definirmos o modelo e aroma."}, {"nome": "Marcador de página livro", "cat": "Mimos", "custo": 0, "preco": 17.0, "mg": 0, "descricao": "Marcador de página. Após a compra, chamar no WhatsApp para definirmos o modelo."}, {"nome": "vela coruja", "cat": "Vela Lembrancinha", "custo": 0, "preco": 10.5, "mg": 0, "descricao": "Contém uma vela aromática em formato de coruja e uma tag de dia dos professores. Aroma de lavanda.", "materiais": [{"nome": "vela aromática em formato de coruja", "qtd": 1}, {"nome": "tag de dia dos professores", "qtd": 1}]}, {"nome": "Vela vidro 70gr batizado", "cat": "Vela Lembrancinha", "custo": 0, "preco": 45.0, "mg": 0, "descricao": "Vela aromática Possuímos essências de mamãe e bebê, vanilla e lavanda. Acompanha a tag personalizada. Após a compra,chamar no watts para definir os detalhes.", "materiais": [{"nome": "a tag personalizada", "qtd": 1}]}, {"nome": "Kit dia dos professores 09", "cat": "Mimos", "custo": 0, "preco": 32.0, "mg": 0, "descricao": "Contém uma vela aromática em vidro, uma caixa craft, um bombom ouro branco e um bilhete. Após a compra, chamar no WhatsApp.", "materiais": [{"nome": "vela aromática em vidro", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "bombom ouro branco", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Convite para Dindos Padrinhos Batismo 29", "cat": "Convite Dindos", "custo": 0, "preco": 197.0, "mg": 0, "descricao": "Contém duas canecas de vidro, uma caixa mdf e um convite impresso. Após a compra, definimos por watts a personalização.", "materiais": [{"nome": "canecas de vidro", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "azulejo", "cat": "Mimos", "custo": 0, "preco": 39.0, "mg": 0, "descricao": "Contém um azulejo 20x20cm Após a compra, definimos por watts a personalização.", "materiais": [{"nome": "azulejo 20x20cm Após a compra", "qtd": 1}, {"nome": "definimos por watts a personalização", "qtd": 1}]}, {"nome": "Mimo noiva", "cat": "Mimos", "custo": 0, "preco": 70.0, "mg": 0, "descricao": "Contem uma caixa mdf, dois bombons ferrero, um bilhete impresso e dois monóculos.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "bombons ferrero", "qtd": 2}, {"nome": "bilhete impresso", "qtd": 1}, {"nome": "monóculos", "qtd": 2}]}, {"nome": "Convite unitário Padrinho casamento 01", "cat": "Convite Dindos", "custo": 0, "preco": 96.0, "mg": 0, "descricao": "Contem uma caixa mdf, uma xícara com pires e um bilhete impresso. Após a compra chamar no WhatsApp para definirmos os detalhes.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "xícara com pires", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite casal Padrinhos casamento 01", "cat": "Convite Dindos", "custo": 0, "preco": 155.0, "mg": 0, "descricao": "Contem uma caixa mdf, duas xícaras com dois pires e um bilhete impresso. Após a compra chamar no WhatsApp para definirmos os detalhes.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "xícaras com dois pires", "qtd": 2}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite casal Padrinhos casamento 02", "cat": "Convite Dindos", "custo": 0, "preco": 115.0, "mg": 0, "descricao": "Contem uma caixa craft duas canecas e um bilhete impresso. Após a compra chamar no WhatsApp para definirmos os detalhes.", "materiais": [{"nome": "caixa craft duas canecas", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite casal Padrinhos casamento 03", "cat": "Convite Dindos", "custo": 0, "preco": 130.0, "mg": 0, "descricao": "Contem uma caixa mdf, duas xícaras e um bilhete impresso. Após a compra chamar no WhatsApp para definirmos os detalhes.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "xícaras", "qtd": 2}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite casal Padrinhos casamento 04", "cat": "Convite Dindos", "custo": 0, "preco": 187.0, "mg": 0, "descricao": "Contem uma caixa mdf, duas canecas com tampa de bambu e um bilhete impresso. Após a compra chamar no WhatsApp para definirmos os detalhes.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "canecas com tampa de bambu", "qtd": 2}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit namorados 4", "cat": "Mimos", "custo": 0, "preco": 193.0, "mg": 0, "descricao": "Contém duas canecas que se encaixam com alça coração, uma caixa mdf, um fio de led, um porta retrato e um cartão.", "materiais": [{"nome": "canecas que se encaixam com alça coração", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal tios", "cat": "Mimos", "custo": 0, "preco": 145.0, "mg": 0, "descricao": "Contém duas xícaras, uma caixa mdf, um fio de led e um cartão.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal avós 01", "cat": "Avós", "custo": 0, "preco": 139.0, "mg": 0, "descricao": "Contém duas canecas, uma caixa mdf, um e um cartão.", "materiais": [{"nome": "canecas", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal avós 02", "cat": "Avós", "custo": 0, "preco": 165.0, "mg": 0, "descricao": "Contém duas canecas, uma caixa craft, dois coador individual e um cartão.", "materiais": [{"nome": "canecas", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "coador individual", "qtd": 2}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Caneca natal avós 04", "cat": "Avós", "custo": 0, "preco": 54.0, "mg": 0, "descricao": "Contém uma caneca, uma caixa cristal e um cartão.", "materiais": [{"nome": "caneca", "qtd": 1}, {"nome": "caixa cristal", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "kit natal avó 05", "cat": "Avós", "custo": 0, "preco": 129.0, "mg": 0, "descricao": "Contém uma caneca com colher, uma caixa mdf, um fio de led e um cartão.", "materiais": [{"nome": "caneca com colher", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "kit natal avós 06", "cat": "Avós", "custo": 0, "preco": 131.0, "mg": 0, "descricao": "Contém duas xícaras, uma caixa craft e um cartão.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "kit natal avós 07", "cat": "Avós", "custo": 0, "preco": 154.0, "mg": 0, "descricao": "Contém duas xícaras, uma caixa mdf, um fio de led e um cartão.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "kit natal avó avô 08", "cat": "Avós", "custo": 0, "preco": 107.0, "mg": 0, "descricao": "Contém uma xícara, uma caixa mdf, um fio de led e um cartão.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "kit natal avó avô 09", "cat": "Avós", "custo": 0, "preco": 105.0, "mg": 0, "descricao": "Contém uma caneca, uma caixa mdf, um fio de led e um cartão.", "materiais": [{"nome": "caneca", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Caneca unitária alça coração natal", "cat": "Mimos", "custo": 0, "preco": 59.0, "mg": 0, "descricao": "Contém uma caneca.", "materiais": [{"nome": "caneca", "qtd": 1}]}, {"nome": "Caneca unitária natal", "cat": "Mimos", "custo": 0, "preco": 45.0, "mg": 0, "descricao": "Contém uma caneca.", "materiais": [{"nome": "caneca", "qtd": 1}]}, {"nome": "Xícara unitária natal", "cat": "Mimos", "custo": 0, "preco": 47.0, "mg": 0, "descricao": "Contém uma xícara.", "materiais": [{"nome": "xícara", "qtd": 1}]}, {"nome": "Kit natal tios 02", "cat": "Mimos", "custo": 0, "preco": 165.0, "mg": 0, "descricao": "Contém duas canecas, uma caixa craft, dois coador individual e um cartão.", "materiais": [{"nome": "canecas", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "coador individual", "qtd": 2}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal tios 03", "cat": "Mimos", "custo": 0, "preco": 131.0, "mg": 0, "descricao": "Contém duas xícaras, dois pires, uma caixa craft e um cartão.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal unitário", "cat": "Mimos", "custo": 0, "preco": 81.0, "mg": 0, "descricao": "Contém uma caneca, uma caixa mdf e um cartão.", "materiais": [{"nome": "caneca", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal unitário 02", "cat": "Mimos", "custo": 0, "preco": 91.0, "mg": 0, "descricao": "Contém uma xícara, uma caixa cristal, uma película de urso tamanho 10cm e um cartão.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "caixa cristal", "qtd": 1}, {"nome": "película de urso tamanho 10cm", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal unitário 03", "cat": "Mimos", "custo": 0, "preco": 127.0, "mg": 0, "descricao": "Contém uma caneca alça colorida, um coador individual, uma caixa mdf e um cartão.", "materiais": [{"nome": "caneca alça colorida", "qtd": 1}, {"nome": "coador individual", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal unitário 04", "cat": "Mimos", "custo": 0, "preco": 136.0, "mg": 0, "descricao": "Contém uma caneca alça branca, uma barra de chocolate Lacta, uma caixa mdf, um fio de led, um pacote de trento, uma café individual e um cartão.", "materiais": [{"nome": "caneca alça branca", "qtd": 1}, {"nome": "barra de chocolate Lacta", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "pacote de trento", "qtd": 1}, {"nome": "café individual", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal unitário 05", "cat": "Mimos", "custo": 0, "preco": 83.0, "mg": 0, "descricao": "Contém uma caneca alça branca, uma barra de chocolate Lacta, uma caixa mdf, um fio de led, um pacote de trento, uma café individual e um cartão.", "materiais": [{"nome": "caneca alça branca", "qtd": 1}, {"nome": "barra de chocolate Lacta", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "pacote de trento", "qtd": 1}, {"nome": "café individual", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal unitário 06", "cat": "Mimos", "custo": 0, "preco": 137.0, "mg": 0, "descricao": "Contém uma caneca alça com colher, um coador individual, uma caixa mdf e um cartão.", "materiais": [{"nome": "caneca alça com colher", "qtd": 1}, {"nome": "coador individual", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal unitário 07", "cat": "Mimos", "custo": 0, "preco": 56.0, "mg": 0, "descricao": "Contém uma xícara, uma caixa cristal e um cartão.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "caixa cristal", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal unitário 08", "cat": "Mimos", "custo": 0, "preco": 156.0, "mg": 0, "descricao": "Contém uma xícara, uma caixa cristal e um cartão.", "materiais": [{"nome": "xícara", "qtd": 1}, {"nome": "caixa cristal", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal unitário 09", "cat": "Mimos", "custo": 0, "preco": 162.0, "mg": 0, "descricao": "Contém uma caneca alça branca, uma caixa mdf, uma barra de chocolate Lacta, um trento, um café individual, uma pelúcia 10cm e um cartão.", "materiais": [{"nome": "caneca alça branca", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "barra de chocolate Lacta", "qtd": 1}, {"nome": "trento", "qtd": 1}, {"nome": "café individual", "qtd": 1}, {"nome": "pelúcia 10cm", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Caixa convite", "cat": "Mimos", "custo": 0, "preco": 101.0, "mg": 0, "descricao": "Contém duas cervejas coronita, dois pacotes de trento, dois pacotes de biscoito salgado, uma caixa craft e um cartão.", "materiais": [{"nome": "cervejas coronita", "qtd": 2}, {"nome": "pacotes de trento", "qtd": 2}, {"nome": "pacotes de biscoito salgado", "qtd": 2}, {"nome": "caixa craft", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal avós 10", "cat": "Avós", "custo": 0, "preco": 155.0, "mg": 0, "descricao": "Contém duas xícaras, dois pires, uma caixa mdf e um cartão.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Caixa convite 02", "cat": "Mimos", "custo": 0, "preco": 148.0, "mg": 0, "descricao": "Contém duas cervejas coronita, dois pacotes de bombom ferrero, um fio de led, uma caixa mdf e um cartão.", "materiais": [{"nome": "cervejas coronita", "qtd": 2}, {"nome": "pacotes de bombom ferrero", "qtd": 2}, {"nome": "fio de led", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit namorados", "cat": "Mimos", "custo": 0, "preco": 237.0, "mg": 0, "descricao": "Contém duas canecas alça coração, uma caixa coração vermelha, um fio de led, 6 bombons ferrero e um cartão.", "materiais": [{"nome": "canecas alça coração", "qtd": 2}, {"nome": "caixa coração vermelha", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "6 bombons ferrero", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit caixa estrela", "cat": "Mimos", "custo": 0, "preco": 141.0, "mg": 0, "descricao": "Contém uma caixa P com balão estrela, uma coronita, dois pacotes de biscoito salgado, um pacote de trento, uma barrinha de nutella e um bilhete.", "materiais": [{"nome": "caixa P com balão estrela", "qtd": 1}, {"nome": "coronita", "qtd": 1}, {"nome": "pacotes de biscoito salgado", "qtd": 2}, {"nome": "pacote de trento", "qtd": 1}, {"nome": "barrinha de nutella", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit caixa pinheiro", "cat": "Mimos", "custo": 0, "preco": 74.9, "mg": 0, "descricao": "Contém uma caixa mdf, um bombom, uma coronita, um pacote de biscoito salgado e um bilhete.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "bombom", "qtd": 1}, {"nome": "coronita", "qtd": 1}, {"nome": "pacote de biscoito salgado", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit namorados caixa hohoho", "cat": "Mimos", "custo": 0, "preco": 192.15, "mg": 0, "descricao": "Contém uma caixa mdf, um trento, uma barra de chocolate Lacta, um café individual, um porta retrato, um fio de led, uma xícara e um bilhete.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "trento", "qtd": 1}, {"nome": "barra de chocolate Lacta", "qtd": 1}, {"nome": "café individual", "qtd": 1}, {"nome": "porta retrato", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "xícara", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit natal unitário 10", "cat": "Mimos", "custo": 0, "preco": 143.0, "mg": 0, "descricao": "Contém uma caixa mdf, uma caneca com alça branca, um coador individual e um bilhete.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "caneca com alça branca", "qtd": 1}, {"nome": "coador individual", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "caixa natal mdf M", "cat": "Mimos", "custo": 0, "preco": 43.0, "mg": 0, "descricao": "Contém uma caixa mdf e um bilhete.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "caixa natal mdf os avós criam memórias", "cat": "Avós", "custo": 0, "preco": 60.0, "mg": 0, "descricao": "Contém uma caixa mdf, um fio de led e um bilhete.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit natal avós 11", "cat": "Avós", "custo": 0, "preco": 153.0, "mg": 0, "descricao": "Contém duas canecas, uma vela no vidro, uma caixa mdf e um cartão.", "materiais": [{"nome": "canecas", "qtd": 2}, {"nome": "vela no vidro", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit mimo com vela", "cat": "Vela Lembrancinha", "custo": 0, "preco": 35.0, "mg": 0, "descricao": "Contém uma caixa craft, um bombom e uma vela no vidro.", "materiais": [{"nome": "caixa craft", "qtd": 1}, {"nome": "bombom", "qtd": 1}, {"nome": "vela no vidro", "qtd": 1}]}, {"nome": "Kit natal avós 12", "cat": "Avós", "custo": 0, "preco": 169.0, "mg": 0, "descricao": "Contém duas xícaras, dois pires, uma vela no vidro, uma caixa mdf e um cartão.", "materiais": [{"nome": "xícaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "vela no vidro", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "Kit natal unitário 11", "cat": "Mimos", "custo": 0, "preco": 177.9, "mg": 0, "descricao": "Contém uma caneca alça coração, uma barra de chocolate Lacta, um café individual, um fio de led, um pacote de chocolate 40gr, uma caixa mdf e um cartão.", "materiais": [{"nome": "caneca alça coração", "qtd": 1}, {"nome": "barra de chocolate Lacta", "qtd": 1}, {"nome": "café individual", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "pacote de chocolate 40gr", "qtd": 1}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "cartão", "qtd": 1}]}, {"nome": "ursinho pelucia 10cm", "cat": "Mimos", "custo": 0, "preco": 35.0, "mg": 0, "descricao": "Contém um ursinho pelúcia 10cm.", "materiais": [{"nome": "ursinho pelúcia 10cm", "qtd": 1}]}, {"nome": "Kit mimo trio velas", "cat": "Vela Lembrancinha", "custo": 0, "preco": 72.0, "mg": 0, "descricao": "Contém uma caixa mdf e três velas vidro.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "velas vidro", "qtd": 3}]}, {"nome": "Caneca unitária com colher natal", "cat": "Mimos", "custo": 0, "preco": 69.0, "mg": 0, "descricao": "Contém uma caneca.", "materiais": [{"nome": "caneca", "qtd": 1}]}, {"nome": "Caneca unitária rena com pires", "cat": "Mimos", "custo": 0, "preco": 89.0, "mg": 0, "descricao": "Contém uma caneca.", "materiais": [{"nome": "caneca", "qtd": 1}]}, {"nome": "Caneca unitária papai noel", "cat": "Mimos", "custo": 0, "preco": 69.0, "mg": 0, "descricao": "Contém uma caneca.", "materiais": [{"nome": "caneca", "qtd": 1}]}, {"nome": "Kit caixa feliz natal", "cat": "Mimos", "custo": 0, "preco": 207.5, "mg": 0, "descricao": "Contém uma caixa feliz Natal, um panetone pequeno, um pacote de bala, um pacote de biscoito salgado, uma caneca, uma pelúcia 10cm, um bombom, um kinder Bueno, um trento, um pacote de cookies e um café individual.", "materiais": [{"nome": "caixa feliz Natal", "qtd": 1}, {"nome": "panetone pequeno", "qtd": 1}, {"nome": "pacote de bala", "qtd": 1}, {"nome": "pacote de biscoito salgado", "qtd": 1}, {"nome": "caneca", "qtd": 1}, {"nome": "pelúcia 10cm", "qtd": 1}, {"nome": "bombom", "qtd": 1}, {"nome": "kinder Bueno", "qtd": 1}, {"nome": "trento", "qtd": 1}, {"nome": "pacote de cookies", "qtd": 1}, {"nome": "café individual", "qtd": 1}]}, {"nome": "Kit caixa boas festas", "cat": "Mimos", "custo": 0, "preco": 129.0, "mg": 0, "descricao": "Contém uma caixa boas festas, uma barra de chocolate Lacta, dois bolinhos, uma vela no vidro, uma caneca transparente, um pacote de cookies e um café individual.", "materiais": [{"nome": "caixa boas festas", "qtd": 1}, {"nome": "barra de chocolate Lacta", "qtd": 1}, {"nome": "bolinhos", "qtd": 2}, {"nome": "vela no vidro", "qtd": 1}, {"nome": "caneca transparente", "qtd": 1}, {"nome": "pacote de cookies", "qtd": 1}, {"nome": "café individual", "qtd": 1}]}, {"nome": "caixa casinha feliz ano novo", "cat": "Mimos", "custo": 0, "preco": 77.9, "mg": 0, "descricao": "Contém uma caixa casinha e um fio de led.", "materiais": [{"nome": "caixa casinha", "qtd": 1}, {"nome": "fio de led", "qtd": 1}]}, {"nome": "kit caixa casinha feliz ano novo", "cat": "Mimos", "custo": 0, "preco": 161.9, "mg": 0, "descricao": "Contém uma caixa casinha, um fio de led, uma espumante monte Pascoal, uma barra Lacta, um trento, uma vela no vidro.", "materiais": [{"nome": "caixa casinha", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "espumante monte Pascoal", "qtd": 1}, {"nome": "barra Lacta", "qtd": 1}, {"nome": "trento", "qtd": 1}, {"nome": "vela no vidro", "qtd": 1}]}, {"nome": "kit caixa casinha chandon", "cat": "Mimos", "custo": 0, "preco": 261.9, "mg": 0, "descricao": "Contém uma caixa casinha, um fio de led, uma espumante Chandon, seis bombons ferrero e três velas no vidro.", "materiais": [{"nome": "caixa casinha", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "espumante Chandon", "qtd": 1}, {"nome": "bombons ferrero", "qtd": 6}, {"nome": "velas no vidro", "qtd": 3}]}, {"nome": "casinha com vela unitária", "cat": "Vela Lembrancinha", "custo": 0, "preco": 59.0, "mg": 0, "descricao": "Contém uma casinha de mdf, um fio de led e uma vela no vidro, possuímos aroma mamãe e bebê, vanilla e lavanda.", "materiais": [{"nome": "casinha de mdf", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "vela no vidro", "qtd": 1}, {"nome": "possuímos aroma mamãe", "qtd": 1}, {"nome": "bebê", "qtd": 1}, {"nome": "vanilla", "qtd": 1}, {"nome": "lavanda", "qtd": 1}]}, {"nome": "Caneca unitária de plástico", "cat": "Mimos", "custo": 0, "preco": 25.0, "mg": 0, "descricao": "Contém uma caneca.", "materiais": [{"nome": "caneca", "qtd": 1}]}, {"nome": "Kit caixa hohoho", "cat": "Mimos", "custo": 0, "preco": 172.9, "mg": 0, "descricao": "Contém uma caixa mdf, um kinder bueno, um trento, uma caneca de plástico, um fio de led, uma pelúcia 10cm e um bilhete.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "kinder bueno", "qtd": 1}, {"nome": "trento", "qtd": 1}, {"nome": "caneca de plástico", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "pelúcia 10cm", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit caixa petisqueira", "cat": "Mimos", "custo": 0, "preco": 210.9, "mg": 0, "descricao": "Contém uma caixa mdf, um kinder bueno, um trento, uma caneca de plástico, um fio de led, uma pelúcia 10cm e um bilhete.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "kinder bueno", "qtd": 1}, {"nome": "trento", "qtd": 1}, {"nome": "caneca de plástico", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "pelúcia 10cm", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit caixa petisqueira 02", "cat": "Mimos", "custo": 0, "preco": 210.9, "mg": 0, "descricao": "Contém uma caixa mdf, um kinder bueno, um trento, uma caneca de plástico, um fio de led, uma pelúcia 10cm e um bilhete.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "kinder bueno", "qtd": 1}, {"nome": "trento", "qtd": 1}, {"nome": "caneca de plástico", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "pelúcia 10cm", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit caixa hohoho revelação", "cat": "Maternidade", "custo": 0, "preco": 161.9, "mg": 0, "descricao": "Contém uma caixa mdf, uma xícara, um café individual, uma barra de chocolate Lacta, um chocolate trento, um fio de led e um bilhete.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "xícara", "qtd": 1}, {"nome": "café individual", "qtd": 1}, {"nome": "barra de chocolate Lacta", "qtd": 1}, {"nome": "chocolate trento", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Kit natal unitário 12", "cat": "Mimos", "custo": 0, "preco": 115.0, "mg": 0, "descricao": "Contém uma caixa mdf, uma xícara branca, um coador individual e um bilhete.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "xícara branca", "qtd": 1}, {"nome": "coador individual", "qtd": 1}, {"nome": "bilhete", "qtd": 1}]}, {"nome": "Baldinho formatura P", "cat": "Formatura", "custo": 0, "preco": 169.0, "mg": 0, "descricao": "Contém 1 balde P, 1 balão personalizado, 1 pacote de trento, 1 pacote de salgadinho, 1 caneca personalizada, 1 kinder Bueno. valor Unitário. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 balde P", "qtd": 1}, {"nome": "1 balão personalizado", "qtd": 1}, {"nome": "1 pacote de trento", "qtd": 1}, {"nome": "1 pacote de salgadinho", "qtd": 1}, {"nome": "1 caneca personalizada", "qtd": 1}, {"nome": "1 kinder Bueno", "qtd": 1}]}, {"nome": "Caixa formatura P", "cat": "Formatura", "custo": 0, "preco": 169.0, "mg": 0, "descricao": "Contém 1 caixa acartonada P, 1 balão personalizado, 1 pacote de bala, 1 pacote de chocolate 40gr, 1 pote de nutella, 1 pacote de disquete e 1 porta retrato. valor Unitário. Após a compra chamar no watts para definir detalhes.", "materiais": [{"nome": "1 caixa acartonada P", "qtd": 1}, {"nome": "1 balão personalizado", "qtd": 1}, {"nome": "1 pacote de bala", "qtd": 1}, {"nome": "1 pacote de chocolate 40gr", "qtd": 1}, {"nome": "1 pote de nutella", "qtd": 1}, {"nome": "1 pacote de disquete", "qtd": 1}, {"nome": "1 porta retrato", "qtd": 1}]}, {"nome": "kit bolinho e cafe", "cat": "Mimos", "custo": 0, "preco": 10.0, "mg": 0, "descricao": "div"}, {"nome": "Vela aromática 20gr", "cat": "Vela Lembrancinha", "custo": 0, "preco": 14.0, "mg": 0, "descricao": "Vela aromática dia da mulher. Possuímos aroma mamãe e bebê, Camilla e lavanda. Após a compra, entramos em contato para definir a arte e aroma escolhido."}, {"nome": "Caneca na caixa cristal", "cat": "Mimos", "custo": 0, "preco": 54.0, "mg": 0, "descricao": "Contém uma caneca personalizada, e uma caixa cristal. Após a compra, entramos em contato para definir a arte.", "materiais": [{"nome": "caneca personalizada", "qtd": 1}, {"nome": "caixa cristal", "qtd": 1}]}, {"nome": "Caneca alça coração na caixa", "cat": "Mimos", "custo": 0, "preco": 78.0, "mg": 0, "descricao": "Contém uma caneca personalizada, uma caixa craft, e um bilhete impresso. Após a compra, entramos em contato para definir a arte.", "materiais": [{"nome": "caneca personalizada", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit dia da mulher 01", "cat": "Mimos", "custo": 0, "preco": 90.0, "mg": 0, "descricao": "Contém uma caneca personalizada, uma caixa craft, um bolinho, um café individual e um bilhete impresso. Após a compra, entramos em contato para definir a arte e aroma escolhido.", "materiais": [{"nome": "caneca personalizada", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "bolinho", "qtd": 1}, {"nome": "café individual", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit dia da mulher 02", "cat": "Mimos", "custo": 0, "preco": 49.0, "mg": 0, "descricao": "Contém uma xicara 80ml, uma caixa craft, um porta xícara de madeira, uma colher um bilhete impresso. Após a compra, entramos em contato para definir a arte.", "materiais": [{"nome": "xicara 80ml", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "porta xícara de madeira", "qtd": 1}, {"nome": "colher um bilhete impresso", "qtd": 1}]}, {"nome": "Kit dia da mulher 03", "cat": "Mimos", "custo": 0, "preco": 80.0, "mg": 0, "descricao": "Contém uma xicara 150, uma caixa craft, um pires, uma colher um bilhete impresso. Após a compra, entramos em contato para definir a arte.", "materiais": [{"nome": "xicara 150", "qtd": 1}, {"nome": "caixa craft", "qtd": 1}, {"nome": "pires", "qtd": 1}, {"nome": "colher um bilhete impresso", "qtd": 1}]}, {"nome": "Kit dia da mulher 04", "cat": "Mimos", "custo": 0, "preco": 151.0, "mg": 0, "descricao": "Contém uma xicara 180ml, uma caixa mdf com tampa acrílica, uma barra de chocolate, um fio de led, um bolinho, um café um bilhete impresso. Após a compra, entramos em contato para definir a arte.", "materiais": [{"nome": "xicara 180ml", "qtd": 1}, {"nome": "caixa mdf com tampa acrílica", "qtd": 1}, {"nome": "barra de chocolate", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "bolinho", "qtd": 1}, {"nome": "café um bilhete impresso", "qtd": 1}]}, {"nome": "Kit dia da mulher 05", "cat": "Mimos", "custo": 0, "preco": 188.0, "mg": 0, "descricao": "Contém uma xicara 180ml, uma caixa mdf com tampa acrílica, uma barra de chocolate, um fio de led, um bolinho, um café um bilhete impresso. Após a compra, entramos em contato para definir a arte.", "materiais": [{"nome": "xicara 180ml", "qtd": 1}, {"nome": "caixa mdf com tampa acrílica", "qtd": 1}, {"nome": "barra de chocolate", "qtd": 1}, {"nome": "fio de led", "qtd": 1}, {"nome": "bolinho", "qtd": 1}, {"nome": "café um bilhete impresso", "qtd": 1}]}, {"nome": "Kit dia da mulher 06", "cat": "Mimos", "custo": 0, "preco": 36.0, "mg": 0, "descricao": "Contém uma toalha personalizada, uma tiara, um saquinho de organza e um bilhete impresso. Após a compra, entramos em contato para definir a arte.", "materiais": [{"nome": "toalha personalizada", "qtd": 1}, {"nome": "tiara", "qtd": 1}, {"nome": "saquinho de organza", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite casal Padrinhos casamento 05", "cat": "Convite Dindos", "custo": 0, "preco": 131.0, "mg": 0, "descricao": "Contem uma caixa craft, duas xicaras, dois pires e um bilhete impresso. Após a compra chamar no WhatsApp para definirmos os detalhes.", "materiais": [{"nome": "caixa craft", "qtd": 1}, {"nome": "xicaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite casal Padrinhos casamento 07", "cat": "Convite Dindos", "custo": 0, "preco": 169.0, "mg": 0, "descricao": "Contem uma caixa mdf, duas xicaras, dois pires, uma vela e um bilhete impresso. Após a compra chamar no WhatsApp para definirmos os detalhes.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "xicaras", "qtd": 2}, {"nome": "pires", "qtd": 2}, {"nome": "vela", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite solteiro Padrinhos casamento", "cat": "Convite Dindos", "custo": 0, "preco": 96.0, "mg": 0, "descricao": "Contem uma caixa mdf, uma xicara, um pires e um bilhete impresso. Após a compra chamar no WhatsApp para definirmos os detalhes.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "xicara", "qtd": 1}, {"nome": "pires", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite solteiro Padrinhos casamento 02", "cat": "Convite Dindos", "custo": 0, "preco": 56.0, "mg": 0, "descricao": "Contem uma caixa cristal, uma xicara e um bilhete impresso. Após a compra chamar no WhatsApp para definirmos os detalhes.", "materiais": [{"nome": "caixa cristal", "qtd": 1}, {"nome": "xicara", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Convite solteiro Padrinhos casamento 03", "cat": "Convite Dindos", "custo": 0, "preco": 72.0, "mg": 0, "descricao": "Contem uma caixa craft, uma xicara, um c pires e um bilhete impresso. Após a compra chamar no WhatsApp para definirmos os detalhes.", "materiais": [{"nome": "caixa craft", "qtd": 1}, {"nome": "xicara", "qtd": 1}, {"nome": "c pires", "qtd": 1}, {"nome": "bilhete impresso", "qtd": 1}]}, {"nome": "Kit revelação gravidez bodys", "cat": "Maternidade", "custo": 0, "preco": 149.0, "mg": 0, "descricao": "Contem uma caixa mdf, dois bodys personalizados, um bilhete impresso e um chaveiro monóculo. Após a compra chamar no WhatsApp para definirmos os detalhes.", "materiais": [{"nome": "caixa mdf", "qtd": 1}, {"nome": "bodys personalizados", "qtd": 2}, {"nome": "bilhete impresso", "qtd": 1}, {"nome": "chaveiro monóculo", "qtd": 1}]}, {"nome": "Amor em Flor - Kit Orquídea Dia das Mães", "cat": "Dia das Mães", "custo": 0, "preco": 195.0, "mg": 0, "descricao": "O kit Amor em Flor é a edição especial da coleção Amor Revelado, criado pra emocionar as mães que fazem nossa vida florescer. Perfeito pra demonstrar um amor raro, lindo e eterno, igual uma orquídea. O que vem na caixa 01 Orquídea Phalaenopsis premium na cor branca 01 Balão bubble personalizado Feliz Dia das Mães 01 Cartão de feliz dia das mães 01 Caixa presente acartonada na cor rosa com laço de"}, {"nome": "Amor em Brinde - Kit Salton Dia das Mães", "cat": "Dia das Mães", "custo": 0, "preco": 224.0, "mg": 0, "descricao": "Toda mãe merece um momento especial só dela. O kit Amor em Brinde faz parte da coleção Amor Revelado e foi criado pra transformar o Dia das Mães em uma celebração inesquecível. É o presente ideal pra dizer vocês é meu maior motivo pra brindar de um jeito sofisticado e cheio de carinho. O que vem na caixa 01 Espumante salton rose refrescante e perfeito pra comemorar 01 Taça de espumante - pra ela g"}, {"nome": "Amor Revelado - Kit Polaroid Dia das Mães", "cat": "Maternidade", "custo": 0, "preco": 219.0, "mg": 0, "descricao": "O primeiro kit da nossa coleção especial de Dia das Mães. Amor Revelado transforma lembranças em presente. Essa caixa de madeira pinus foi feita pra guardar memórias e criar novas. Cada polaroid conta uma história de vocês, e os doces convidam ela pra um momento de carinho só seu. O que vem na caixa 01 Caixa de madeira pinus com tampa articulada e luz de led 04 Fotos polaroid personalizadas com as"}, {"nome": "Amor em Caneca - Kit Café da Manhã Dia das Mães", "cat": "Dia das Mães", "custo": 0, "preco": 295.0, "mg": 0, "descricao": "Nada diz eu te amo como um café da manhã preparado com carinho. O kit Amor em caneca é da coleção Amor Revelado e foi pensado pra mãe começar o Dia das Mães se sentindo especial. É o presente pra mãe que te ensinou que pequenos momentos viram grandes memórias. O que vem na caixa 01 Caneca de cerâmica exclusiva da mamãe - pra ela usar todos os dias pode ser outra estampa disponível 01 Coador de caf"}, {"nome": "Essência Revelada - Kit Personalizado Dia das Mães", "cat": "Maternidade", "custo": 0, "preco": 167.0, "mg": 0, "descricao": "Algumas mães são tão únicas que merecem um presente só delas. O kit Essência Revelada é a edição mais exclusiva da coleção Amor Revelado, criada pra emocionar com significado e doçura. A tampa de acrílico traz a inicial do nome dela, e a polaroid carrega a definição mais bonita mãe, termo usado para designar alguém com um coração capaz de amar infinitamente. O que vem na caixa 01 Caixa de madeira"}, {"nome": "Amor em inspiração - Kit dia das mães", "cat": "Dia das Mães", "custo": 0, "preco": 135.0, "mg": 0, "descricao": "Algumas mães não só criam, elas inspiram. O kit Amor em Inspiração é da coleção Amor Revelado e foi criado pra declarar toda a admiração que você sente pela mulher que te ensinou a ser quem você é. A tampa da caixa já diz tudo Mãe, minha maior inspiração . Por dentro, cada detalhe reforça o quanto ela é incrível. O que vem na caixa 01 Caixa MDF com frase em acrílico dourado Mãe minha maior inspira"}, {"nome": "Amor em inspiração dourada - Kit dia das mães", "cat": "Dia das Mães", "custo": 0, "preco": 139.0, "mg": 0, "descricao": "Algumas mães não só criam, elas inspiram. O kit Amor em Inspiração é da coleção Amor Revelado e foi criado pra declarar toda a admiração que você sente pela mulher que te ensinou a ser quem você é. A tampa da caixa já diz tudo Mãe, minha maior inspiração . Por dentro, cada detalhe reforça o quanto ela é incrível. O que vem na caixa 01 Caixa MDF com frase em acrílico dourado Mãe minha maior inspira"}, {"nome": "Amor de vó - Kit dia das Mães para avó", "cat": "Avós", "custo": 0, "preco": 137.0, "mg": 0, "descricao": "Se mãe já é amor, vó é amor em dobro. O kit Amor de Vó nasceu da Coleção Amor Revelado pra homenagear a mulher que é mãe, avó, conselheira e melhor amiga. Criado especialmente pra netos e netas declararem que colo de vó é o lugar mais seguro do mundo. O que vem na caixa 01 Caixa MDF com frase personalizada na tampa 01 Xícara de cerâmica com nome da vovó - Vó 01 Pires combinando 01 Polaroid persona"}, {"nome": "Amor de Vó em Xícara - Kit Dia das Mães pra Avó", "cat": "Avós", "custo": 0, "preco": 155.0, "mg": 0, "descricao": "Casa de vó tem café passado na hora, bolo no forno e conversa que cura a alma. O kit Amor de Vó em Xícara é da Coleção Amor Revelado - Edição Vovó e transforma o café da tarde dela num momento inesquecível. É o presente pra netos que querem dizer obrigada por me criar também . O que vem na bandeja 01 Bandeja de madeira com laço de cetim rosa 01 Xícara de cerâmica Vó é amor de mãe em dobro 01 Coado"}, {"nome": "Mãe de primeira viagem - kit com coador", "cat": "Dia das Mães", "custo": 0, "preco": 145.0, "mg": 0, "descricao": "O primeiro Dia das Mães nunca se esquece. O kit Primeiro Amor Revelado é da Coleção Amor Revelado e foi criado pra celebrar a mulher que acabou de descobrir o maior amor do mundo. Cada detalhe fala sobre esse novo começo a ilustração na caneca, a foto de vocês dois na polaroid, o chaveiro pra ela levar esse momento pra sempre. O que vem na caixa 01 Caixa MDF Feliz dia das Mães 01 Caneca de cerâmic"}, {"nome": "Amor de Vó em coração - Kit Dia das Mães pra Avó", "cat": "Avós", "custo": 0, "preco": 145.0, "mg": 0, "descricao": "Tem presente que não precisa de embrulho bonito pra emocionar. O kit Vovó em Dobro é da Coleção Amor Revelado - Edição Vovó e carrega a declaração mais linda que uma filha pode fazer pra mãe dela. É uma xícara com Vovó da e atrás com a frase que resume tudo. É pra vovó tomar café lembrando que ela ganhou o coração de duas gerações. O que vem na caixa 01 Caixa de madeira com visor em formato de cor"}, {"nome": "Cuidado de Vó - Mimo Dia das Mães pra Avó", "cat": "Avós", "custo": 0, "preco": 89.0, "mg": 0, "descricao": "Vó cuida de todo mundo, mas quem cuida da vó O Cuidado de Vó é da Linha de Mimos - Edição Vovó e foi criado pra dizer agora é sua vez de ser cuidada . Um kit pequeno no tamanho, gigante no significado. O que vem na caixinha 01 Caixa MDF com tampa AVÓ é amor de mãe em dobro 01 Polaroid personalizada com foto sua e da vovó frase AVÓ é MÃE 2 vezes 01 Vidrinho de escalda pés 01 Mini hidratante 01 Cart"}, {"nome": "Cuidado de Mãe - Mimo Dia das Mães", "cat": "Dia das Mães", "custo": 0, "preco": 89.0, "mg": 0, "descricao": "Mãe cuida de todo mundo, mas quem cuida da mãe O Cuidado de Mãe é da Linha de Mimos - Edição Mãe foi criado pra dizer agora é sua vez de ser cuidada . Um kit pequeno no tamanho, gigante no significado. O que vem na caixinha 01 Caixa MDF confirmar escritas disponíveis 01 Polaroid personalizada com foto sua mãe confirmar escritas disponíveis 01 Vidrinho de escalda pés 01 Mini hidratante 01 Cartão Pr"}, {"nome": "SPA de Mãe - Mimo Autocuidado Dia das Mães", "cat": "Dia das Mães", "custo": 0, "preco": 59.0, "mg": 0, "descricao": "Mãe vive em modo cuidar dos outros . O SPA de Mãe é da Linha de Mimos e chegou pra lembrar que ela também merece colo, descanso e um tempinho só dela. Tudo dentro de uma maletinha charmosa que ela vai reaproveitar depois. O que vem na maleta 01 Maleta acrílica transparente com laço pink de cetim 01 Vela aromática - Um tempinho só seu. Você merece esse cuidado 01 Mini hidratante - Um carinho em for"}, {"nome": "SPA de Mãe - creme", "cat": "Dia das Mães", "custo": 0, "preco": 12.0, "mg": 0, "descricao": "Mãe vive em modo cuidar dos outros . O SPA de Mãe é da Linha de Mimos e chegou pra lembrar que ela também merece colo, descanso e um tempinho só dela. Ideal para mimos de empresa. O que vem 01 Mini hidratante - Um carinho em forma de cuidado, pra te lembrar todos os dias o quanto você é amada 01 Saquinho de organza 01 Tag especial Pra lembrar, todos os dias, o quanto você é especial Feliz Dia das"}, {"nome": "SPA de Mãe - vela", "cat": "Vela Lembrancinha", "custo": 0, "preco": 18.0, "mg": 0, "descricao": "Mãe vive em modo cuidar dos outros . O SPA de Mãe é da Linha de Mimos e chegou pra lembrar que ela também merece colo, descanso e um tempinho só dela. Ideal para mimos de empresa. O que vem 01 vela aromática essencias sortidas, entre lavanda, vanilla e mamar e bebê 01 Saquinho de organza 01 Tag especial Pra lembrar, todos os dias, o quanto você é especial Feliz Dia das Mães Detalhes importantes Va"}, {"nome": "SPA de Mãe - escalda pés", "cat": "Dia das Mães", "custo": 0, "preco": 18.0, "mg": 0, "descricao": "Mãe vive em modo cuidar dos outros . O SPA de Mãe é da Linha de Mimos e chegou pra lembrar que ela também merece colo, descanso e um tempinho só dela. Ideal para mimos de empresa. O que vem 01 vidro com sais de escalda pés 01 Saquinho de organza 01 Tag especial Pra lembrar, todos os dias, o quanto você é especial Feliz Dia das Mães Detalhes importantes Valor especial acima de 10 unidades Público S"}, {"nome": "Xícara com pires unitária - Dia das mães", "cat": "Dia das Mães", "custo": 0, "preco": 53.0, "mg": 0, "descricao": "A xícara que toda vó quer na mesa do café. Cerâmica branca com Vó nome em dourado e corações. Personalize com o nome da sua avó e faça o café da tarde dela mais especial. possuímos outras sugestões de personalização Personalização Envie o nome da vovó pelo WhatsApp Ou MONTE SEU KIT Possuímos adicionais como Brownie R 14,00 Polaroid com foto R 30 Coador café R 35,00 Caixa craft para presente R 19,0"}, {"nome": "Xícara unitária - Dia das mães", "cat": "Dia das Mães", "custo": 0, "preco": 47.0, "mg": 0, "descricao": "A xícara que toda mãe quer. Personalize com o nome da sua mãe e faça o café da tarde dela mais especial. possuímos outras sugestões de personalização Personalização Envie o nome da mãe pelo WhatsApp Ou MONTE SEU KIT Possuímos adicionais como Brownie R 14,00 Polaroid com foto R 30 Coador café R 35,00 Caixa craft para presente R 19,00 Detalhes importantes Valor especial acima de 10 unidades Público"}, {"nome": "Caneca dourada - Dia das mães", "cat": "Dia das Mães", "custo": 0, "preco": 79.0, "mg": 0, "descricao": "A alça dourada que toda mãe quer. Personalize com o nome da sua mãe e faça o café da tarde dela mais especial. possuímos outras sugestões de personalização Personalização Envie o nome da mãe pelo WhatsApp Ou MONTE SEU KIT Possuímos adicionais como Brownie R 14,00 Polaroid com foto R 30 Coador café R 35,00 Caixa craft para presente R 19,00 Detalhes importantes Valor especial acima de 10 unidades Pú"}, {"nome": "Caneca alça coração - Dia das mães", "cat": "Dia das Mães", "custo": 0, "preco": 59.0, "mg": 0, "descricao": "A alça coração que toda mãe quer. possuímos outras cores disponíveis Personalize com o nome da sua mãe e faça o café da tarde dela mais especial. possuímos outras sugestões de personalização Personalização Envie o nome da mãe pelo WhatsApp Ou MONTE SEU KIT Possuímos adicionais como Brownie R 14,00 Polaroid com foto R 30 Coador café R 35,00 Caixa craft para presente R 19,00 Detalhes importantes Val"}, {"nome": "Caneca tradicional - Dia das mães", "cat": "Dia das Mães", "custo": 0, "preco": 45.0, "mg": 0, "descricao": "A caneca tradicional que toda mãe quer. possuímos outras cores disponíveis Personalize com o nome da sua mãe e faça o café da tarde dela mais especial. possuímos outras sugestões de personalização Personalização Envie o nome da mãe pelo WhatsApp Ou MONTE SEU KIT Possuímos adicionais como Brownie R 14,00 Polaroid com foto R 30 Coador café R 35,00 Caixa craft para presente R 19,00 Detalhes important"}, {"nome": "Caixa Especial para Ela - Dia das Mães", "cat": "Dia das Mães", "custo": 0, "preco": 212.0, "mg": 0, "descricao": "Algumas mães são tão únicas que merecem um presente só delas. O que vem na caixa 01 Caixa de madeira com tampa personalizada. 01 Porta retrato polaroide com uma 01 Escalda pés 01 creme 01 vela no vidro 01 Luz de LED aconchegante que transforma a caixa em luminária 01 Cartão de feliz dia das mães. 01 chaveiro com foto 01 copo de alumínio personalizado Palha decorativa. Detalhes importantes Tamanho"}, {"nome": "Mimo Dia das mães- Dia das Mães", "cat": "Dia das Mães", "custo": 0, "preco": 82.0, "mg": 0, "descricao": "Algumas mães são tão únicas que merecem um presente só delas. O que vem na caixa 01 Caixa de madeira com tampa personalizada. 01 xícara personalizada (pode ir com outras estampas) 01 Cartão de feliz dia das mães. 01 sachê de chá Palha decorativa. Detalhes importantes Personalização entrar em contato para ver a arte desejada após a compra. Entrega Montamos e entregamos em Porto Alegre e região, con"}, {"nome": "Convite para Dindos Padrinhos Batismo 30", "cat": "Convite Dindos", "custo": 0, "preco": 181.0, "mg": 0, "descricao": "Contém dois copos térmicos, uma caixa mdf, uma vela e um convite impresso. Após a compra, definimos por watts as cores e a personalização.", "materiais": [{"nome": "copos térmicos", "qtd": 2}, {"nome": "caixa mdf", "qtd": 1}, {"nome": "vela", "qtd": 1}, {"nome": "convite impresso", "qtd": 1}]}, {"nome": "Box Coração Café, Amor amp Você", "cat": "Mimos", "custo": 0, "preco": 265.0, "mg": 0, "descricao": "O Box Café, Amor Você foi criado para casais que amam os pequenos detalhes. Com 2 xícaras personalizadas, petisqueira em formato de coração e uma apresentação encantadora, essa caixa transforma um café juntos em um momento especial p style margin-bottom 12px font-style normal font-variant-caps normal font-width normal font-size 20px line-height normal font-family Times New Roman font-size-adjust n"}, {"nome": "Box Eu Já Te Amo Tanto", "cat": "Mimos", "custo": 0, "preco": 172.0, "mg": 0, "descricao": "O Box Eu Já Te Amo Tanto reúne detalhes delicados para emocionar em cada momento. Com caneca de alça coração, porta-foto ima personalizado e iluminação aconchegante, essa caixa foi criada para revelar sentimentos de um jeito único p style margin-bottom 12px font-style normal font-variant-caps normal font-width normal font-size 20px line-height normal font-family Times New Roman font-size-adjust no"}, {"nome": "Box Nossa História", "cat": "Mimos", "custo": 0, "preco": 132.0, "mg": 0, "descricao": "O Box Nossa História foi criado para transformar lembranças em detalhes inesquecíveis. Com copo térmico personalizado, chaveiro câmera com foto e acabamento em MDF, essa caixa combina carinho, modernidade e afeto em um único presente p style margin-bottom 12px font-style normal font-variant-caps normal font-width normal font-size 20px line-height normal font-family Times New Roman font-size-adjust"}, {"nome": "Box Casal Perfeitamente Imperfeito", "cat": "Mimos", "custo": 0, "preco": 162.0, "mg": 0, "descricao": "O Box Casal Perfeitamente Imperfeito foi criado para representar aqueles casais que vivem entre implicâncias, risadas e muito amor Com xic"}, {"nome": "Box Pato da Vida", "cat": "Mimos", "custo": 0, "preco": 139.0, "mg": 0, "descricao": "O Box Pato da Vida foi criado para casais leves, divertidos e cheios de carinho Com caneca temática, chocolates e chaveiro câmera pers"}, {"nome": "Box Nosso Amor em Detalhes", "cat": "Mimos", "custo": 0, "preco": 355.0, "mg": 0, "descricao": "O Box Nosso Amor em Detalhes foi criado para surpreender com carinho em cada pequeno detalhe Com caneca delicada, chocolates Ferrero Rocher, port"}, {"nome": "Sacola Presente Meu Mozão garrafa", "cat": "Mimos", "custo": 0, "preco": 195.0, "mg": 0, "descricao": "A Sacola Presente Meu Mozão foi criada para transformar carinho em uma experiência inesquecível Com ursinho de pelúci"}, {"nome": "Sacola Presente Meu Mozão copo", "cat": "Mimos", "custo": 0, "preco": 211.5, "mg": 0, "descricao": "A Sacola Presente Meu Mozão foi criada para transformar carinho em uma experiência inesquecível Com ursinho de pelúci"}, {"nome": "Kit Abra Aqui", "cat": "Mimos", "custo": 0, "preco": 107.5, "mg": 0, "descricao": "O Kit Abra Aqui foi criado para surpreender de forma divertida, moderna e cheia de carinho Com suporte em madeira, abridor integrado, cerveja lo"}, {"nome": "Kit porta retrato Contém Amor", "cat": "Mimos", "custo": 0, "preco": 139.0, "mg": 0, "descricao": "Contém Amor foi criado para transformar amor em decoração afetiva Com quadro iluminado, porta retrato perso", "materiais": [{"nome": "Amor foi criado para transformar amor em decoração afetiva Com quadro iluminado", "qtd": 1}, {"nome": "porta retrato perso", "qtd": 1}]}, {"nome": "Caixa tenho una surpresa revelação", "cat": "Maternidade", "custo": 0, "preco": 109.0, "mg": 0, "descricao": "contém 1 caixa mdf 1 body personalizado 1 luz de led", "materiais": [{"nome": "1 caixa mdf 1 body personalizado 1 luz de led", "qtd": 1}]}];
     var _now=Date.now();
-    _seed.forEach(function(p,i){ p.id='c'+_now+'_'+i; p.updatedAt=_now; });
+    _seed.forEach(function(p,i){ p.id='c_'+String(p.nome||('x'+i)).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40); p.updatedAt=_now; });
     localStorage.setItem('sp_cat', JSON.stringify(_seed));
     localStorage.setItem('sp_cat_v2','1');
     console.log('[Catálogo] '+_seed.length+' produtos pré-carregados <span class=ic-check></span>');
@@ -9259,7 +9266,7 @@ window._renderUltimaSync = function(){
   try{
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
-    var ver='v20/08-c24';
+    var ver='v31/08-c27';
     var txt;
     if(!t){ txt=ver+' · <span class=ic-nuvem></span> sem sync ainda'; }
     else{
@@ -13582,6 +13589,839 @@ try {
 })();
 </script>
 
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   AJUSTES 31/08 — catálogo
+     A · junta os produtos repetidos (mesmo nome) e enterra as cópias
+     B · busca com sugestão: começa a digitar e ele completa a palavra
+
+   Por que repetia: o catálogo vem pré-carregado (seed) com id feito a
+   partir do relógio do aparelho. Celular e computador semearam em
+   horas diferentes → ids diferentes → a nuvem, que junta por id,
+   guardou as duas listas. Aqui a gente junta por NOME e enterra o
+   perdedor, senão a nuvem devolve tudo no ciclo seguinte.
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+function _nc(s){
+  return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .toLowerCase().replace(/\s+/g,' ').trim();
+}
+
+/* ── A · junta os repetidos ─────────────────────────────────────── */
+function arrumarCatalogo(){
+  try{
+    if(typeof catalogo === 'undefined' || !Array.isArray(catalogo)) return 0;
+    if(catalogo.length < 2) return 0;
+
+    var porNome = {}, semNome = [];
+    catalogo.forEach(function(p){
+      if(!p) return;
+      var k = _nc(p.nome);
+      if(!k){ semNome.push(p); return; }
+      (porNome[k] = porNome[k] || []).push(p);
+    });
+
+    var temRepetido = Object.keys(porNome).some(function(k){ return porNome[k].length > 1; });
+    if(!temRepetido) return 0;
+
+    /* quanto mais preenchido, melhor — em caso de empate fica o mais recente */
+    function peso(p){
+      var n = 0;
+      ['cat','descricao','preco','custo','tempoMin','nivel','precoCartao'].forEach(function(c){
+        if(p[c]) n++;
+      });
+      n += (p.materiais||[]).length;
+      if(typeof _getFoto === 'function' && _getFoto(p.id)) n += 3;
+      return n;
+    }
+
+    var agora = Date.now(), enterrar = [], limpos = [], mexeu = 0;
+
+    Object.keys(porNome).forEach(function(k){
+      var grupo = porNome[k];
+      if(grupo.length === 1){ limpos.push(grupo[0]); return; }
+
+      grupo.sort(function(a,b){
+        return peso(b) - peso(a) || (b.updatedAt||0) - (a.updatedAt||0);
+      });
+      var fica = grupo[0];
+
+      grupo.slice(1).forEach(function(p){
+        /* recolhe do irmão o que o escolhido não tem */
+        ['cat','descricao','nivel','tempoMin','preco','precoCartao','custo','matCusto',
+         'mo','custoFixo','lucro','lucroPct','taxaPct','mg'].forEach(function(c){
+          if((fica[c]===undefined || fica[c]===null || fica[c]==='' || fica[c]===0) && p[c]) fica[c] = p[c];
+        });
+        if(!(fica.materiais||[]).length && (p.materiais||[]).length) fica.materiais = p.materiais;
+        /* a foto do irmão vale, se o escolhido estiver sem */
+        if(typeof _getFoto === 'function' && typeof _setFoto === 'function'){
+          try{
+            var f = _getFoto(p.id);
+            if(f && !_getFoto(fica.id)) _setFoto(fica.id, f);
+            if(f) _setFoto(p.id, null);       // libera memória do aparelho
+          }catch(e){}
+        }
+        enterrar.push(p.id);
+        mexeu++;
+      });
+
+      fica.updatedAt = agora;
+      limpos.push(fica);
+    });
+
+    if(!mexeu) return 0;
+
+    limpos = limpos.concat(semNome);
+    limpos.sort(function(a,b){
+      return String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR',{sensitivity:'base'});
+    });
+
+    catalogo.length = 0;
+    limpos.forEach(function(p){ catalogo.push(p); });
+
+    if(typeof _enterrar === 'function') _enterrar(enterrar);
+    else {
+      try{
+        var tb = JSON.parse(localStorage.getItem('sp_tumbas')||'[]');
+        enterrar.forEach(function(id){ tb.push({id:id, ts:agora}); });
+        localStorage.setItem('sp_tumbas', JSON.stringify(tb));
+        if(typeof tumbas !== 'undefined' && Array.isArray(tumbas)){
+          enterrar.forEach(function(id){ tumbas.push({id:id, ts:agora}); });
+        }
+      }catch(e){}
+    }
+
+    try{ DB.set('cat', catalogo); }catch(e){}
+    try{ if(typeof save === 'function') save(); }catch(e){}
+    try{ if(typeof renderCatalogo === 'function') renderCatalogo(); }catch(e){}
+    try{ if(typeof popularCatalogoSelect === 'function') popularCatalogoSelect(); }catch(e){}
+    console.log('[Catálogo] '+mexeu+' produto(s) repetido(s) juntado(s)');
+    return mexeu;
+  }catch(e){ console.warn('arrumarCatalogo', e); return 0; }
+}
+window._arrumarCatalogo = arrumarCatalogo;
+
+/* toda vez que a nuvem manda dados é quando as cópias do outro
+   aparelho chegam aqui — então arruma logo depois */
+if(typeof window._mesclarNuvem === 'function'){
+  var _mescCat = window._mesclarNuvem;
+  window._mesclarNuvem = function(d){
+    var r = _mescCat.apply(this, arguments);
+    try{ arrumarCatalogo(); }catch(e){}
+    return r;
+  };
+}
+
+/* ── B · busca com sugestão ──────────────────────────────────────── */
+var _sugIdx = -1, _sugAtual = [];
+
+function _caixaSug(){
+  var inp = document.getElementById('cat-busca');
+  if(!inp) return null;
+  var cx = document.getElementById('cat-sugestoes');
+  if(cx) return cx;
+  var pai = inp.parentNode;
+  if(!pai) return null;
+  if(getComputedStyle(pai).position === 'static') pai.style.position = 'relative';
+  cx = document.createElement('div');
+  cx.id = 'cat-sugestoes';
+  cx.setAttribute('role','listbox');
+  cx.style.cssText = 'display:none;position:absolute;left:0;right:0;top:100%;margin-top:4px;'+
+    'background:#fff;border:1.5px solid var(--pink,#e91e63);border-radius:12px;'+
+    'box-shadow:0 8px 22px rgba(0,0,0,.14);z-index:60;max-height:230px;overflow-y:auto;'+
+    '-webkit-overflow-scrolling:touch';
+  pai.appendChild(cx);
+  return cx;
+}
+
+function _fecharSug(){
+  var cx = document.getElementById('cat-sugestoes');
+  if(cx){ cx.style.display='none'; cx.innerHTML=''; }
+  _sugIdx = -1; _sugAtual = [];
+}
+
+/* nomes e categorias que combinam com o que ela digitou.
+   1º os que COMEÇAM com o termo, depois os que só contêm. */
+function _sugestoes(q){
+  if(typeof catalogo === 'undefined' || !Array.isArray(catalogo)) return [];
+  var qn = _nc(q);
+  if(qn.length < 1) return [];
+  var vistos = {}, comeca = [], contem = [];
+
+  function testar(txt, tipo){
+    if(!txt) return;
+    var k = tipo+'|'+_nc(txt);
+    if(vistos[k]) return;
+    var alvo = _nc(txt);
+    if(alvo === qn){ vistos[k]=1; return; }               // já digitou inteiro
+    if(alvo.indexOf(qn) === 0){ vistos[k]=1; comeca.push({txt:txt, tipo:tipo}); return; }
+    /* começo de qualquer palavra: "urso" acha "Caixa Urso" */
+    var pal = alvo.split(' ');
+    for(var i=1;i<pal.length;i++){
+      if(pal[i].indexOf(qn) === 0){ vistos[k]=1; comeca.push({txt:txt, tipo:tipo}); return; }
+    }
+    if(alvo.indexOf(qn) >= 0){ vistos[k]=1; contem.push({txt:txt, tipo:tipo}); }
+  }
+
+  catalogo.forEach(function(p){ if(p) testar(p.nome, 'produto'); });
+  catalogo.forEach(function(p){ if(p) testar(p.cat, 'categoria'); });
+
+  return comeca.concat(contem).slice(0, 7);
+}
+
+function _marcarTrecho(txt, q){
+  var esc = (typeof _escHtml === 'function') ? _escHtml : function(x){ return String(x==null?'':x); };
+  var alvo = _nc(txt), qn = _nc(q);
+  var i = alvo.indexOf(qn);
+  if(i < 0 || !qn) return esc(txt);
+  return esc(txt.slice(0,i)) +
+         '<b style="color:var(--pink,#e91e63)">'+esc(txt.slice(i, i+qn.length))+'</b>' +
+         esc(txt.slice(i+qn.length));
+}
+
+function _pintarSug(){
+  var cx = document.getElementById('cat-sugestoes'); if(!cx) return;
+  Array.prototype.forEach.call(cx.children, function(el, i){
+    el.style.background = (i === _sugIdx) ? 'var(--pink-l,#fce4ec)' : '#fff';
+  });
+}
+
+function _abrirSug(){
+  var inp = document.getElementById('cat-busca'); if(!inp) return;
+  var q = inp.value || '';
+  var lista = _sugestoes(q);
+  _sugAtual = lista; _sugIdx = -1;
+  var cx = _caixaSug(); if(!cx) return;
+  if(!lista.length){ _fecharSug(); return; }
+
+  cx.innerHTML = lista.map(function(s){
+    var etq = s.tipo === 'categoria'
+      ? '<span style="font-size:10px;color:var(--cyan-d,#00838f);font-weight:700;flex-shrink:0">categoria</span>'
+      : '';
+    return '<div class="cat-sug-item" data-txt="'+
+      ((typeof _escHtml==='function')?_escHtml(s.txt):s.txt)+
+      '" style="padding:10px 12px;cursor:pointer;font-size:13px;display:flex;gap:8px;'+
+      'align-items:center;justify-content:space-between;border-bottom:1px solid #f1f1f1">'+
+      '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+
+      _marcarTrecho(s.txt, q)+'</span>'+etq+'</div>';
+  }).join('');
+  cx.style.display = 'block';
+}
+
+function _escolher(txt){
+  var inp = document.getElementById('cat-busca'); if(!inp) return;
+  inp.value = txt;
+  _fecharSug();
+  if(typeof renderCatalogo === 'function') renderCatalogo();
+  try{ inp.blur(); }catch(e){}
+}
+
+document.addEventListener('input', function(e){
+  if(!e.target || e.target.id !== 'cat-busca') return;
+  _abrirSug();
+});
+
+document.addEventListener('focusin', function(e){
+  if(e.target && e.target.id === 'cat-busca' && (e.target.value||'').trim()) _abrirSug();
+});
+
+/* ↓ ↑ para escolher, Enter aceita, Esc fecha.
+   Este listener vem ANTES do que já existia (fase de captura) porque
+   o antigo dá blur no Enter e fecharia a lista sem escolher nada. */
+document.addEventListener('keydown', function(e){
+  if(!e.target || e.target.id !== 'cat-busca') return;
+  var cx = document.getElementById('cat-sugestoes');
+  var aberta = cx && cx.style.display === 'block' && _sugAtual.length;
+
+  if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+    if(!aberta){ _abrirSug(); return; }
+    e.preventDefault();
+    _sugIdx += (e.key === 'ArrowDown' ? 1 : -1);
+    if(_sugIdx < 0) _sugIdx = _sugAtual.length - 1;
+    if(_sugIdx >= _sugAtual.length) _sugIdx = 0;
+    _pintarSug();
+    return;
+  }
+  if(e.key === 'Escape'){ _fecharSug(); return; }
+  if(e.key === 'Enter'){
+    if(aberta){
+      e.preventDefault();
+      e.stopPropagation();
+      _escolher(_sugAtual[_sugIdx >= 0 ? _sugIdx : 0].txt);
+    }
+  }
+}, true);
+
+/* toque/clique numa sugestão — pointerdown para vencer o blur do campo */
+document.addEventListener('pointerdown', function(e){
+  var it = e.target && e.target.closest ? e.target.closest('.cat-sug-item') : null;
+  if(it){
+    e.preventDefault();
+    _escolher(it.dataset.txt || '');
+    return;
+  }
+  if(e.target && e.target.id === 'cat-busca') return;
+  var cx = document.getElementById('cat-sugestoes');
+  if(cx && cx.contains(e.target)) return;
+  _fecharSug();
+});
+
+/* limpar a busca também fecha a lista */
+var _limpOrig = window._limparBuscaCat;
+if(typeof _limpOrig === 'function'){
+  window._limparBuscaCat = function(){
+    _fecharSug();
+    return _limpOrig.apply(this, arguments);
+  };
+}
+
+/* ── partida ─────────────────────────────────────────────────────── */
+function iniciar3108(){
+  arrumarCatalogo();
+  var inp = document.getElementById('cat-busca');
+  if(inp) inp.setAttribute('placeholder','Buscar produto — comece a digitar');
+}
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(iniciar3108, 1600); });
+else setTimeout(iniciar3108, 1600);
+
+})();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   AJUSTES 31/08 (parte 2) — pedido
+     C · pagamento no cartão abre o campo de taxa e já soma no total
+     D · "Taxa de entrega": item de serviço que ela puxa da lista,
+         digita o valor e que NUNCA entra em estoque nem em compras
+     E · digitar num item/material já sugere o que existe no estoque
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+function _nn(s){
+  return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .toLowerCase().replace(/\s+/g,' ').trim();
+}
+function _num(v){ var n=parseFloat(v); return isFinite(n)?n:0; }
+function _el(id){ return document.getElementById(id); }
+function _gv(id){ var e=_el(id); return e?e.value:''; }
+function _r2(n){ return Math.round(n*100)/100; }
+
+/* ══ C · TAXA DA MAQUININHA ══════════════════════════════════════ */
+
+/* qualquer coisa que envolva cartão abre o campo */
+function _ehCartao(v){ return /cart[aã]o|maquinin|cr[eé]dito|d[eé]bito/i.test(String(v||'')); }
+
+/* ela mexe na taxa uma vez e o app lembra, por forma de pagamento */
+function _taxasSalvas(){
+  try{ return JSON.parse(localStorage.getItem('sp_taxa_pgto')||'{}'); }catch(e){ return {}; }
+}
+/* A taxa NÃO vem preenchida: ela muda de maquininha, de parcelamento e
+   de promoção, então quem digita é a Laura, venda a venda. O que ficou
+   guardado serve só para oferecer um atalho — nunca entra sozinho. */
+function _taxaSalva(pgto){
+  var t=_taxasSalvas(), v=t[_nn(pgto)];
+  return (v!=null && _num(v)>0) ? _num(v) : null;
+}
+function _guardarTaxa(pgto, pct){
+  try{
+    var t=_taxasSalvas(); t[_nn(pgto)]=pct;
+    localStorage.setItem('sp_taxa_pgto', JSON.stringify(t));
+  }catch(e){}
+}
+
+/* quanto ela está cobrando hoje, sem a taxa */
+function _subtotalPedido(){
+  var rows=document.querySelectorAll('#p-itens-lista .item-pedido-row');
+  if(rows.length){
+    var t=0;
+    rows.forEach(function(r){
+      t += _num((r.querySelector('.pi-qtd')||{}).value) * _num((r.querySelector('.pi-preco')||{}).value);
+    });
+    return _r2(t);
+  }
+  return _r2(_num(_gv('p-valor-manual')));
+}
+
+/* a taxa em vigor: 0 quando não é cartão ou o campo está escondido */
+function _taxaPct(){
+  var g=_el('p-taxa-group');
+  if(!g || g.style.display==='none') return 0;
+  var p=_num(_gv('p-taxa'));
+  if(p<0) p=0; if(p>=100) p=0;
+  return p;
+}
+
+/* Igual ao catálogo: o preço dela fica inteiro e a taxa vai por fora.
+   R$ 200 com 4% viram R$ 208,33 — assim ela recebe os 200 limpos. */
+function _valorTaxa(){
+  var pct=_taxaPct(); if(pct<=0) return 0;
+  var sub=_subtotalPedido(); if(sub<=0) return 0;
+  return _r2(sub/(1-pct/100) - sub);
+}
+window._taxaCartaoPct   = _taxaPct;
+window._taxaCartaoValor = _valorTaxa;
+
+function _pintarTaxa(){
+  var sub=_subtotalPedido(), pct=_taxaPct(), tx=_valorTaxa(), tot=_r2(sub+tx);
+  var info=_el('p-taxa-info');
+  if(info){
+    if(pct>0 && sub>0){
+      info.innerHTML = 'Itens '+fmt(sub)+' + taxa '+String(pct).replace('.',',')+'% ('+fmt(tx)+
+        ') = <b style="color:var(--pink)">'+fmt(tot)+'</b> a cobrar';
+    } else {
+      /* atalho para a última taxa usada nessa forma de pagamento —
+         só entra se ela tocar, porque a taxa varia de venda pra venda */
+      var ult=_taxaSalva(_gv('p-pgto'));
+      info.innerHTML = 'Digite a taxa desta venda. Ela entra por cima, '+
+        'para você receber o valor cheio dos itens.' +
+        (ult!=null
+          ? ' <button type="button" id="p-taxa-ultima" data-pct="'+ult+'" '+
+            'style="background:var(--pink-l,#fce4ec);color:var(--pink,#e91e63);border:1px solid var(--pink,#e91e63);'+
+            'border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;margin-left:4px">'+
+            'usar '+String(ult).replace('.',',')+'%</button>'
+          : '');
+    }
+  }
+  var linha=_el('p-taxa-linha');
+  if(linha){
+    if(pct>0 && tx>0){
+      linha.style.display='block';
+      linha.innerHTML='itens '+fmt(sub)+' &nbsp;·&nbsp; taxa '+
+        String(pct).replace('.',',')+'% '+fmt(tx);
+    } else linha.style.display='none';
+  }
+}
+
+/* mostra/esconde o campo conforme a forma de pagamento */
+function _toggleTaxa(){
+  var g=_el('p-taxa-group'); if(!g) return;
+  var pgto=_gv('p-pgto');
+  var ehCart=_ehCartao(pgto);
+  g.style.display = ehCart ? 'block' : 'none';
+  var inp=_el('p-taxa');
+  if(inp){
+    /* nasce em branco, e zera de novo se ela trocar a forma de pagamento —
+       a taxa do débito não vale para o crédito. Só não mexe no que veio
+       de um pedido salvo (aí a taxa é a daquela venda). */
+    var restaurado = inp.dataset.restaurado==='1' && inp.dataset.pgto===_nn(pgto);
+    if(!restaurado && (!ehCart || inp.dataset.pgto!==_nn(pgto))){
+      inp.value='';
+      delete inp.dataset.tocado;
+      delete inp.dataset.restaurado;
+      inp.dataset.pgto = ehCart ? _nn(pgto) : '';
+    }
+  }
+  _recalcTudo();
+}
+
+/* o atalho "usar X%" — preenche e recalcula, mas só quando ela toca */
+document.addEventListener('click', function(e){
+  var b=e.target && e.target.closest ? e.target.closest('#p-taxa-ultima') : null;
+  if(!b) return;
+  e.preventDefault();
+  var inp=_el('p-taxa'); if(!inp) return;
+  inp.value=b.dataset.pct||'';
+  inp.dataset.tocado='1';
+  _recalcTudo();
+});
+
+/* refaz total, restante, parcelas e lucro com a taxa dentro */
+function _recalcTudo(){
+  var sub=_subtotalPedido(), tx=_valorTaxa(), tot=_r2(sub+tx);
+  var temItens = document.querySelectorAll('#p-itens-lista .item-pedido-row').length>0;
+
+  var hid=_el('p-valor'); if(hid) hid.value=tot;
+
+  if(temItens){
+    var disp=_el('p-total-display'); if(disp) disp.textContent=fmt(tot);
+    var sinal=_num(_gv('p-sinal')), rest=_r2(tot-sinal);
+    var re=_el('p-restante-display');
+    if(re){
+      re.textContent=fmt(Math.max(0,rest));
+      re.style.color = rest<=0 ? 'var(--green)' : 'var(--brown)';
+    }
+  }
+  _pintarTaxa();
+  try{ if(typeof _infoParcelas==='function') _infoParcelas(); }catch(e){}
+  try{ _lucroComTaxa(); }catch(e){}
+}
+window._aplicarTaxaCartao = function(){
+  var inp=_el('p-taxa');
+  if(inp){ inp.dataset.tocado='1'; _guardarTaxa(_gv('p-pgto'), _num(inp.value)); }
+  _recalcTudo();
+};
+
+/* o lucro é sobre o que ela recebe: a taxa é repasse, não é ganho */
+function _lucroComTaxa(){
+  var el=_el('p-lucro-display'); if(!el) return;
+  var liquido=_subtotalPedido();
+  var custo=_num(_gv('p-custo'));
+  var lucro=_r2(liquido-custo);
+  el.textContent='R$ '+lucro.toFixed(2).replace('.',',');
+  el.style.color = lucro>=0 ? 'var(--green)' : '#EF4444';
+}
+
+/* ── engancha nos recálculos que já existiam ── */
+['recalcularTotal','recalcularTotalManual','calcularLucro'].forEach(function(fn){
+  var orig=window[fn];
+  if(typeof orig==='function'){
+    window[fn]=function(){
+      var r=orig.apply(this, arguments);
+      try{ _recalcTudo(); }catch(e){}
+      return r;
+    };
+  }
+});
+document.addEventListener('change', function(e){
+  if(e.target && e.target.id==='p-pgto') _toggleTaxa();
+});
+document.addEventListener('input', function(e){
+  if(e.target && (e.target.id==='p-sinal' || e.target.id==='p-valor-manual')) _recalcTudo();
+});
+
+/* ── a taxa vira uma linha no pedido salvo ──
+   Assim o total, o recibo, o financeiro e o WhatsApp já saem certos,
+   e a cliente enxerga de onde veio o acréscimo. */
+var _coletarOrig = window.coletarItensPedido;
+if(typeof _coletarOrig==='function'){
+  window.coletarItensPedido = function(){
+    var itens=_coletarOrig.apply(this, arguments) || [];
+    itens = itens.filter(function(it){ return !(it && it.taxaCartao); });
+    var pct=_taxaPct(), tx=_valorTaxa();
+    if(itens.length && pct>0 && tx>0){
+      itens.push({ nome:'Taxa do cartão ('+String(pct).replace('.',',')+'%)',
+                   qtd:1, un:'un', preco:tx, taxaCartao:true, pct:pct });
+    }
+    return itens;
+  };
+}
+/* ao reabrir o pedido, a linha volta a ser campo de taxa, não item */
+var _popularOrig = window.popularItensPedido;
+if(typeof _popularOrig==='function'){
+  window.popularItensPedido = function(itens){
+    var lista=(itens||[]).slice();
+    var taxa=null;
+    lista=lista.filter(function(it){
+      if(it && it.taxaCartao){ taxa=it; return false; }
+      return true;
+    });
+    var r=_popularOrig.call(this, lista);
+    var inp=_el('p-taxa');
+    if(inp && taxa){
+      var g=_el('p-taxa-group'); if(g) g.style.display='block';
+      inp.value = taxa.pct || '';
+      inp.dataset.tocado='1';
+      inp.dataset.restaurado='1';                 // é a taxa daquela venda
+      inp.dataset.pgto=_nn(_gv('p-pgto'));
+    }
+    _recalcTudo();
+    return r;
+  };
+}
+
+/* sem itens (valor digitado à mão) a taxa não vira linha —
+   então carimba no pedido salvo depois que ele foi gravado */
+var _salvarTaxaOrig = window.salvarPedido;
+if(typeof _salvarTaxaOrig==='function'){
+  window.salvarPedido = function(){
+    var temItens=document.querySelectorAll('#p-itens-lista .item-pedido-row').length>0;
+    var pct=_taxaPct(), tx=_valorTaxa(), sub=_subtotalPedido();
+    var idEdit=_gv('p-id');
+    var antes={}; try{ (pedidos||[]).forEach(function(p){ if(p) antes[p.id]=1; }); }catch(e){}
+
+    var r=_salvarTaxaOrig.apply(this, arguments);
+
+    try{
+      var alvo = idEdit
+        ? pedidos.find(function(p){ return p.id===idEdit; })
+        : pedidos.find(function(p){ return p && !antes[p.id]; });
+      if(alvo){
+        alvo.taxaCartaoPct = pct||0;
+        alvo.taxaCartaoValor = tx||0;
+        if(!temItens && tx>0) alvo.valor=_r2(sub+tx);
+        if(typeof DB!=='undefined') DB.set('pedidos', pedidos);
+      }
+    }catch(e){ console.warn('[taxa] não carimbou:', e && e.message); }
+    return r;
+  };
+}
+
+/* ══ D · SERVIÇOS (taxa de entrega) ══════════════════════════════ */
+/* Ficam fora do catálogo de propósito: assim não entram no catálogo
+   que vai pra cliente, não contam no total de produtos e não têm
+   como escorregar pro estoque ou pra lista de compras. */
+var SERVICOS = [
+  { id:'sv_taxa-entrega', nome:'Taxa de entrega', cat:'Serviço' }
+];
+window._servicos = function(){ return SERVICOS.slice(); };
+function _ehServicoNome(nome){
+  var n=_nn(nome);
+  return SERVICOS.some(function(s){ return _nn(s.nome)===n; });
+}
+window._ehServicoNome = _ehServicoNome;
+
+/* entra na lista "Puxar do catálogo", num grupo separado no topo */
+var _popSelOrig = window.popularCatalogoSelect;
+if(typeof _popSelOrig==='function'){
+  window.popularCatalogoSelect = function(){
+    var r=_popSelOrig.apply(this, arguments);
+    var sel=_el('p-catalogo-sel'); if(!sel) return r;
+    if(sel.querySelector('optgroup[data-servicos]')) return r;
+    var g=document.createElement('optgroup');
+    g.label='Serviços (não entram no estoque)';
+    g.setAttribute('data-servicos','1');
+    g.innerHTML=SERVICOS.map(function(s){
+      return '<option value="'+s.id+'">'+s.nome+'</option>';
+    }).join('');
+    var prim=sel.querySelector('option');
+    if(prim && prim.nextSibling) sel.insertBefore(g, prim.nextSibling);
+    else sel.appendChild(g);
+    return r;
+  };
+}
+
+/* puxar um serviço: entra só como item, com o valor em branco pra ela digitar */
+var _puxarTaxaOrig = window.puxarProdutoCatalogo;
+if(typeof _puxarTaxaOrig==='function'){
+  window.puxarProdutoCatalogo = function(id){
+    var sv = SERVICOS.filter(function(s){ return s.id===id; })[0];
+    if(!sv) return _puxarTaxaOrig.apply(this, arguments);
+
+    if(typeof adicionarItemPedido==='function') adicionarItemPedido(sv.nome, 1, '');
+    var lista=_el('p-itens-lista');
+    if(lista && lista.lastElementChild){
+      lista.lastElementChild.dataset.servico='1';
+      var pv=lista.lastElementChild.querySelector('.pi-preco');
+      if(pv){ try{ pv.focus(); }catch(e){} }
+    }
+    if(typeof recalcularTotal==='function') recalcularTotal();
+    if(typeof toast==='function') toast('<span class=ic-local></span> "'+sv.nome+'" adicionada. Digite o valor.');
+    var sel=_el('p-catalogo-sel'); if(sel) sel.value='';
+    return;
+  };
+}
+
+/* trava dupla: serviço nunca vira material (é o que puxa estoque e compras) */
+var _espOrig = window._espelharMaterialDoItem;
+if(typeof _espOrig==='function'){
+  window._espelharMaterialDoItem = function(row){
+    try{
+      var i=row && row.querySelector('input[type=text]');
+      if(i && _ehServicoNome(i.value)){
+        if(typeof _removerMirror==='function') _removerMirror(row);
+        return;
+      }
+    }catch(e){}
+    return _espOrig.apply(this, arguments);
+  };
+}
+
+/* ══ E · SUGESTÃO AO DIGITAR NOS ITENS E MATERIAIS ═══════════════ */
+/* O datalist do HTML quase não aparece no celular. Esta caixa é
+   posicionada com position:fixed porque os campos ficam dentro de
+   uma grade com rolagem — absolute ficava cortado. */
+
+var _cx=null, _alvo=null, _lista=[], _idx=-1;
+
+function _caixa(){
+  if(_cx) return _cx;
+  _cx=document.createElement('div');
+  _cx.id='sug-itens';
+  _cx.style.cssText='display:none;position:fixed;background:#fff;'+
+    'border:1.5px solid var(--pink,#e91e63);border-radius:12px;'+
+    'box-shadow:0 8px 22px rgba(0,0,0,.18);z-index:9999;max-height:210px;'+
+    'overflow-y:auto;-webkit-overflow-scrolling:touch;font-size:13px';
+  document.body.appendChild(_cx);
+  return _cx;
+}
+function _fechar(){ if(_cx){ _cx.style.display='none'; _cx.innerHTML=''; } _alvo=null; _lista=[]; _idx=-1; }
+window._fecharSugItens=_fechar;
+
+/* de onde vem a sugestão: estoque sempre; nos itens do pedido
+   entram também os serviços, pra ela digitar "taxa" e achar */
+function _fonte(inp){
+  var out=[];
+  if(inp.closest && inp.closest('.item-pedido-row')){
+    SERVICOS.forEach(function(s){ out.push({txt:s.nome, tipo:'serviço'}); });
+  }
+  try{
+    (estoque||[]).forEach(function(e){ if(e && e.nome) out.push({txt:e.nome, tipo:'estoque'}); });
+  }catch(e){}
+  return out;
+}
+
+function _achar(inp, q){
+  var qn=_nn(q); if(qn.length<1) return [];
+  var vistos={}, comeca=[], contem=[];
+  _fonte(inp).forEach(function(o){
+    var alvo=_nn(o.txt);
+    if(!alvo || vistos[alvo] || alvo===qn) return;
+    if(alvo.indexOf(qn)===0){ vistos[alvo]=1; comeca.push(o); return; }
+    var pal=alvo.split(' ');
+    for(var i=1;i<pal.length;i++){
+      if(pal[i].indexOf(qn)===0){ vistos[alvo]=1; comeca.push(o); return; }
+    }
+    if(alvo.indexOf(qn)>=0){ vistos[alvo]=1; contem.push(o); }
+  });
+  return comeca.concat(contem).slice(0,8);
+}
+
+function _esc(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function _marcar(txt,q){
+  var i=_nn(txt).indexOf(_nn(q));
+  if(i<0||!q) return _esc(txt);
+  return _esc(txt.slice(0,i))+'<b style="color:var(--pink,#e91e63)">'+
+    _esc(txt.slice(i,i+q.length))+'</b>'+_esc(txt.slice(i+q.length));
+}
+function _pintar(){
+  if(!_cx) return;
+  Array.prototype.forEach.call(_cx.children, function(el,i){
+    el.style.background = (i===_idx) ? 'var(--pink-l,#fce4ec)' : '#fff';
+  });
+}
+function _posicionar(inp){
+  var r=inp.getBoundingClientRect();
+  var cx=_caixa();
+  cx.style.left=Math.max(6, r.left)+'px';
+  cx.style.width=Math.max(160, Math.min(r.width, window.innerWidth-12))+'px';
+  var espacoAbaixo=window.innerHeight-r.bottom;
+  if(espacoAbaixo < 140 && r.top > 160){
+    cx.style.top=''; cx.style.bottom=(window.innerHeight-r.top+4)+'px';
+    cx.style.maxHeight=Math.min(210, r.top-14)+'px';
+  } else {
+    cx.style.bottom=''; cx.style.top=(r.bottom+4)+'px';
+    cx.style.maxHeight=Math.min(210, espacoAbaixo-14)+'px';
+  }
+}
+function _abrir(inp){
+  var q=inp.value||'';
+  var lista=_achar(inp,q);
+  _alvo=inp; _lista=lista; _idx=-1;
+  if(!lista.length){ _fechar(); return; }
+  var cx=_caixa();
+  cx.innerHTML=lista.map(function(o){
+    var cor = o.tipo==='serviço' ? 'var(--pink,#e91e63)' : 'var(--cyan-d,#00838f)';
+    return '<div class="sug-item" data-txt="'+_esc(o.txt)+'" data-tipo="'+o.tipo+'" '+
+      'style="padding:10px 12px;cursor:pointer;display:flex;gap:8px;align-items:center;'+
+      'justify-content:space-between;border-bottom:1px solid #f1f1f1">'+
+      '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+
+      _marcar(o.txt,q)+'</span>'+
+      '<span style="font-size:10px;font-weight:700;flex-shrink:0;color:'+cor+'">'+o.tipo+'</span>'+
+      '</div>';
+  }).join('');
+  cx.style.display='block';
+  _posicionar(inp);
+}
+function _escolher(txt, tipo){
+  if(!_alvo) return;
+  var inp=_alvo, row=inp.closest?inp.closest('.item-pedido-row'):null;
+  inp.value=txt;
+  if(row && tipo==='serviço'){
+    row.dataset.servico='1';
+    var pv=row.querySelector('.pi-preco');
+    _fechar();
+    inp.dispatchEvent(new Event('input',{bubbles:true}));
+    inp.dispatchEvent(new Event('change',{bubbles:true}));
+    if(pv && !_num(pv.value)){ try{ pv.focus(); pv.select&&pv.select(); }catch(e){} }
+    return;
+  }
+  _fechar();
+  inp.dispatchEvent(new Event('input',{bubbles:true}));
+  inp.dispatchEvent(new Event('change',{bubbles:true}));
+  try{ inp.blur(); }catch(e){}
+}
+
+/* quais campos ganham sugestão */
+function _ehCampoSug(el){
+  if(!el || el.tagName!=='INPUT' || el.type!=='text') return false;
+  if(el.id==='cat-busca') return false;               // esse tem a caixa dele
+  if(el.classList.contains('mat-nome')) return true;
+  if(el.classList.contains('fi-nome'))  return true;
+  return !!(el.closest && el.closest('.item-pedido-row'));
+}
+
+/* o datalist do HTML puxava do MESMO estoque e abria uma segunda
+   listinha por cima da nossa. Some com ela — não se perde nada. */
+function _semDatalist(el){ if(el && el.hasAttribute('list')) el.removeAttribute('list'); }
+
+document.addEventListener('input', function(e){
+  if(_ehCampoSug(e.target)){ _semDatalist(e.target); _abrir(e.target); }
+});
+document.addEventListener('focusin', function(e){
+  if(!_ehCampoSug(e.target)) return;
+  _semDatalist(e.target);
+  if((e.target.value||'').trim()) _abrir(e.target);
+});
+document.addEventListener('keydown', function(e){
+  if(!_ehCampoSug(e.target)) return;
+  var aberta=_cx && _cx.style.display==='block' && _lista.length && _alvo===e.target;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+    if(!aberta){ _abrir(e.target); return; }
+    e.preventDefault();
+    _idx += (e.key==='ArrowDown'?1:-1);
+    if(_idx<0) _idx=_lista.length-1;
+    if(_idx>=_lista.length) _idx=0;
+    _pintar();
+    return;
+  }
+  if(e.key==='Escape'){ _fechar(); return; }
+  if(e.key==='Enter' && aberta){
+    e.preventDefault(); e.stopPropagation();
+    var o=_lista[_idx>=0?_idx:0];
+    _escolher(o.txt, o.tipo);
+  }
+}, true);
+
+/* pointerdown, senão o blur do campo fecha a lista antes do clique */
+document.addEventListener('pointerdown', function(e){
+  var it=e.target && e.target.closest ? e.target.closest('#sug-itens .sug-item') : null;
+  if(it){ e.preventDefault(); _escolher(it.dataset.txt||'', it.dataset.tipo||''); return; }
+  if(_ehCampoSug(e.target)) return;
+  if(_cx && _cx.contains(e.target)) return;
+  _fechar();
+});
+window.addEventListener('scroll', function(){ if(_alvo && _cx && _cx.style.display==='block') _posicionar(_alvo); }, true);
+window.addEventListener('resize', _fechar);
+
+/* ── partida ─────────────────────────────────────────────────────── */
+var _openTaxa = window.openModal;
+if(typeof _openTaxa==='function'){
+  window.openModal = function(id){
+    var r=_openTaxa.apply(this, arguments);
+    if(id==='modal-pedido'){ _fechar(); setTimeout(_toggleTaxa, 80); }
+    return r;
+  };
+}
+var _closeTaxa = window.closeModal;
+if(typeof _closeTaxa==='function'){
+  window.closeModal = function(){ _fechar(); return _closeTaxa.apply(this, arguments); };
+}
+var _resetTaxa = window.resetModal;
+if(typeof _resetTaxa==='function'){
+  window.resetModal = function(id){
+    var r=_resetTaxa.apply(this, arguments);
+    if(id==='modal-pedido'){
+      var inp=_el('p-taxa');
+      if(inp){ inp.value=''; delete inp.dataset.tocado; delete inp.dataset.restaurado; delete inp.dataset.pgto; }
+      setTimeout(_toggleTaxa, 60);
+    }
+    return r;
+  };
+}
+window._toggleTaxaCartao = _toggleTaxa;
+
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(_toggleTaxa, 1700); });
+else setTimeout(_toggleTaxa, 1700);
+
+})();
+</script>
 
 </body>
 </html>
