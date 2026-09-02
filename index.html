@@ -1598,7 +1598,7 @@ function _mudarFiltroMes(val){
       <div class="field-group" style="margin-bottom:8px">
         <label class="form-label">GASTO COM MATERIAIS (R$)</label>
         <input type="number" id="p-custo" class="form-input" placeholder="0,00" step="0.01" min="0" oninput="calcularLucro()">
-        <div style="font-size:10px;color:var(--gray-d);margin-top:3px">Soma automática dos materiais abaixo (pode ajustar). Gasto real: <b id="p-gasto-real" style="color:var(--cyan-d)">R$ 0,00</b></div>
+        <div style="font-size:10px;color:var(--gray-d);margin-top:3px">Soma de cada material abaixo — quantidade × preço da unidade (pode ajustar). Gasto real: <b id="p-gasto-real" style="color:var(--cyan-d)">R$ 0,00</b></div>
       </div>
       <div style="background:var(--pink-l);border-radius:12px;padding:10px 14px;margin-bottom:8px">
         <span style="font-size:11px;color:var(--brown);font-weight:700">LUCRO REAL DO PEDIDO</span>
@@ -7393,6 +7393,13 @@ function confirmarCompraItem_OLD_DESATIVADA(){
 .material-row .mat-valor{ -moz-appearance:textfield; }
 /* NAO usar display:none em filho da linha: tira da grade e desloca tudo. */
 .material-row .mat-un:empty{ visibility:hidden; }
+/* conta da linha ("5 × R$ 6,00 = R$ 30,00"). grid-column:1/-1 abre uma
+   segunda faixa dentro da própria grade; com display:none ela some
+   inteira, sem deslocar nenhuma das seis colunas de cima. */
+.material-row .mat-calc{
+  grid-column:1 / -1; font-size:9.5px; color:var(--gray-d); font-weight:600;
+  text-align:right; line-height:1.3; margin-top:-1px; padding-right:24px;
+}
 /* item do pedido: R$ colado no valor, igual ao dos materiais (Claude ago/2026) */
 .item-pedido-row .pi-preco-box{
   display:flex; align-items:center; gap:3px; min-width:0;
@@ -7459,7 +7466,7 @@ function adicionarMaterialPedido(nome,qtd,status,matId,tipo,size,itemId,valor){
       '<select class="mat-sel" onchange="_balaoSelecionado(\''+rowId+'\')" style="padding:8px;border:1px solid #eee;border-radius:8px;font-size:12px">'+optionsHtml+'</select>'+
       '<input type="number" class="mat-qtd" value="'+qtd+'" min="0.1" step="0.1" oninput="_balaoSelecionado(\''+rowId+'\');calcularGastoReal()" style="padding:8px;border:1px solid #eee;border-radius:8px;text-align:center;font-size:12px">'+
       '<span class="mat-un">'+(selItem?(selItem.un||'un'):'')+'</span>'+
-      '<input type="number" class="mat-valor" value="'+_v0+'" min="0" step="0.01" placeholder="R$" title="Custo por unidade. Vale para todos os kits com esse material." oninput="calcularGastoReal()">'+
+      '<input type="number" class="mat-valor" value="'+_v0+'" min="0" step="0.01" placeholder="R$/un" title="Quanto custa UMA unidade. Vale para todos os kits com esse material." oninput="calcularGastoReal()">'+
       '<span class="mat-badge" title="'+tipo+'">'+(selId?(_ok0?'<span class=dot-coberto></span>':'<span class=dot-pendente></span>'):emo)+'</span>'+
       '<button class="material-del" onclick="document.getElementById(\''+rowId+'\').remove();calcularGastoReal()"><span class=ic-fechar></span></button>';
   } else {
@@ -7470,7 +7477,7 @@ function adicionarMaterialPedido(nome,qtd,status,matId,tipo,size,itemId,valor){
       '<input type="text" class="mat-nome" value="'+nome.replace(/"/g,'&quot;')+'" placeholder="Buscar material (qualquer parte do nome)" autocomplete="off" oninput="atualizarStatusMaterial(\''+rowId+'\');_updMatUn(\''+rowId+'\');_matSugerir(\''+rowId+'\');autoPreencherPrecoMaterial(\''+rowId+'\');calcularGastoReal()" onchange="_maybeConvertColor(\''+rowId+'\')" onblur="_matSugFechar()">'+
       '<input type="number" class="mat-qtd" value="'+qtd+'" min="0.1" step="0.1" placeholder="Qtd" oninput="atualizarStatusMaterial(\''+rowId+'\');calcularGastoReal()">'+
       '<span class="mat-un">'+_unidadeDoNome(nome)+'</span>'+
-      '<input type="number" class="mat-valor" value="'+(valor!==''?valor:'')+'" min="0" step="0.01" placeholder="R$" title="Custo por unidade. Vale para todos os kits com esse material." oninput="calcularGastoReal()">'+
+      '<input type="number" class="mat-valor" value="'+(valor!==''?valor:'')+'" min="0" step="0.01" placeholder="R$/un" title="Quanto custa UMA unidade. Vale para todos os kits com esse material." oninput="calcularGastoReal()">'+
       '<span class="mat-badge" title="'+statusFinal+'">'+icon+'</span>'+
       '<button class="material-del" onclick="document.getElementById(\''+rowId+'\').remove();calcularGastoReal()"><span class=ic-fechar></span></button>';
   }
@@ -9266,7 +9273,7 @@ window._renderUltimaSync = function(){
   try{
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
-    var ver='v31/08-c27';
+    var ver='v02/09-c29';
     var txt;
     if(!t){ txt=ver+' · <span class=ic-nuvem></span> sem sync ainda'; }
     else{
@@ -9569,8 +9576,8 @@ else appLockInit();
     row.dataset.valorEm = valorEm || 0;
     var campo=row.querySelector('.mat-valor');
     if(campo){
-      campo.title='Custo por unidade deste material. O que você digitar vale para TODOS os kits.';
-      campo.placeholder='0,00';
+      campo.title='Quanto custa UMA unidade deste material. O que você digitar vale para TODOS os kits.';
+      campo.placeholder='un';
       if(parseFloat(campo.value)===0) campo.value='';   // zero fica vazio, não "0"
       // embrulha num box com o R$ do lado, igual ao app da Tia Sú
       if(!campo.parentElement.classList.contains('mat-valor-box')){
@@ -11026,15 +11033,18 @@ if(typeof _calcOrig6 === 'function'){
 </script>
 <script>
 /* ══════════════════════════════════════════════════════════════════
-   CAMPO R$ DO MATERIAL MOSTRA O TOTAL DA LINHA
-   Pedido da Suzana, 19/08: "colocar o total já ali no quadradinho,
-   se for 1 unitário, se for mais total".
+   CAMPO R$ DO MATERIAL É O PREÇO POR UNIDADE
+   Revisto em 02/09: a Laura digitava 6,00 numa linha de 5 unidades
+   esperando R$ 30,00 de gasto, e o app entendia 6,00 como o TOTAL —
+   gravava R$ 1,20 por unidade, espalhava esse 1,20 pelo preço central
+   de todos os kits e descontava só R$ 6,00 do lucro.
 
-   Como funciona por dentro:
-     · o que aparece e o que ela digita  = TOTAL da linha
-     · o que fica guardado no material   = UNITÁRIO (total ÷ qtd)
-   O unitário é o que alimenta o preço central de todos os kits,
-   então ele continua sendo a verdade — só não é mais o que aparece.
+   Como funciona agora:
+     · o que aparece e o que ela digita  = UNITÁRIO (quanto custa UM)
+     · o total da linha                  = unidade × quantidade,
+       mostrado em cinza embaixo e somado no Gasto com materiais
+   O unitário é o que alimenta o preço central de todos os kits, e
+   agora é também o que ela vê — os dois deixam de brigar.
    ══════════════════════════════════════════════════════════════════ */
 (function(){
 'use strict';
@@ -11055,33 +11065,70 @@ function _setUnit(row, unit){
 }
 window._matUnit = _unit;
 
-/* mostra o total no quadradinho */
+/* número bonito: 6 vira "6.00", mas 1,2345 não perde as casas finas */
+function _fmtUnit(u){
+  var quatro = Math.round(u * 10000) / 10000;
+  return (Math.abs(quatro - Math.round(quatro * 100) / 100) > 1e-9)
+    ? String(quatro) : quatro.toFixed(2);
+}
+function _br(n){ return n.toFixed(2).replace('.', ','); }
+
+/* a conta em cinza embaixo da linha: "5 × R$ 6,00 = R$ 30,00".
+   Vai com grid-column:1/-1, então ocupa uma segunda faixa da própria
+   grade sem empurrar nenhuma das seis colunas de cima. */
+function _linhaCalc(row, html){
+  var el = row.querySelector('.mat-calc');
+  if(!html){ if(el) el.style.display = 'none'; return; }
+  if(!el){
+    el = document.createElement('div');
+    el.className = 'mat-calc';
+    row.appendChild(el);
+  }
+  el.style.display = 'block';
+  el.innerHTML = html;
+}
+
+/* mostra o preço POR UNIDADE no quadradinho, e a conta embaixo */
 function _mostrarTotal(row){
   var c = _campo(row); if(!c) return;
   var u = _unit(row), q = _qtd(row);
-  if(!(u > 0)){ c.value = ''; c.title = 'Custo deste material. Digite o total da linha.'; return; }
+
+  /* não reescreve o campo enquanto ela está digitando nele */
+  if(document.activeElement !== c) c.value = (u > 0) ? _fmtUnit(u) : '';
+
+  if(!(u > 0)){
+    c.title = 'Quanto custa UMA unidade deste material.';
+    _linhaCalc(row, '');
+    return;
+  }
   var total = Math.round(u * q * 100) / 100;
-  c.value = total.toFixed(2);
   c.title = (q > 1)
-    ? (q + ' × R$ ' + u.toFixed(2).replace('.',',') + ' = R$ ' + total.toFixed(2).replace('.',',')
-       + '  ·  o preço por unidade é o que vale para os outros kits')
+    ? ('preço de uma unidade · ' + q + ' × R$ ' + _br(u) + ' = R$ ' + _br(total))
     : 'Custo por unidade deste material. Vale para todos os kits.';
-  // rótulo ajuda a saber que é total quando tem mais de um
+  _linhaCalc(row, (q > 1)
+    ? (q + ' × R$ ' + _br(u) + ' = <b style="color:var(--brown)">R$ ' + _br(total) + '</b>')
+    : '');
   var rs = row.querySelector('.mat-rs');
   if(rs) rs.textContent = 'R$';
 }
 window._mostrarTotalLinha = _mostrarTotal;
 
-/* ── a Suzana digitou: o que ela digitou é o TOTAL ─────────────── */
+/* ── ela digitou: o que ela digitou é o preço de UMA unidade ───── */
 var _tSave2 = null;
 window._matValorDigitado = function(rowId){
   var row = document.getElementById(rowId); if(!row) return;
   var c = _campo(row); if(!c) return;
 
-  var total = parseFloat(c.value);
+  var digitado = parseFloat(c.value);
   var q = _qtd(row);
-  var unit = (total > 0) ? (Math.round((total / q) * 10000) / 10000) : 0;
+  var unit = (digitado > 0) ? (Math.round(digitado * 10000) / 10000) : 0;
   _setUnit(row, unit);
+
+  /* a conta embaixo acompanha enquanto ela digita */
+  _linhaCalc(row, (unit > 0 && q > 1)
+    ? (q + ' × R$ ' + _br(unit) + ' = <b style="color:var(--brown)">R$ ' +
+       _br(Math.round(unit * q * 100) / 100) + '</b>')
+    : '');
 
   if(unit > 0){
     var it = _itemDaLinha(row);
@@ -11293,6 +11340,18 @@ function _aoMudarQtd(e){
 }
 document.addEventListener('input',  _aoMudarQtd);
 document.addEventListener('change', _aoMudarQtd);
+
+/* Reabrir um pedido salvo desenhava os materiais e parava por aí: o
+   "Gasto real" ficava em R$ 0,00 até ela encostar em algum campo, e o
+   lucro aparecia inflado. Agora refaz a conta assim que a lista monta. */
+var _renderMatOrig = window.renderMateriaisPedido;
+if(typeof _renderMatOrig === 'function'){
+  window.renderMateriaisPedido = function(){
+    var r = _renderMatOrig.apply(this, arguments);
+    setTimeout(_atualizarTodosOsTotais, 0);
+    return r;
+  };
+}
 
 /* escolher a cor do balão traz o preço do item escolhido */
 var _balaoOrig7 = window._balaoSelecionado;
@@ -14419,6 +14478,189 @@ window._toggleTaxaCartao = _toggleTaxa;
 
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(_toggleTaxa, 1700); });
 else setTimeout(_toggleTaxa, 1700);
+
+})();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   MATERIAL NOVO ENTRA NA LISTA, COM O PREÇO QUE ELA DIGITOU
+   Pedido da Suzana, 02/09.
+
+   O que faltava: se a Laura escrevia um material que ainda não existia
+   ("Glitter holográfico rosa") e digitava R$ 4,50, nada disso ficava.
+   No pedido seguinte o nome não aparecia na sugestão e ela digitava o
+   preço de novo — e o "preço central", que é o que alimenta todos os
+   kits, continuava vazio.
+
+   Agora, assim que ela termina o nome e põe um valor, o material é
+   cadastrado na lista (Estoque) com esse preço por unidade. Entra com
+   quantidade 0 de propósito: ela ainda não comprou, então a linha segue
+   pendente e o material aparece na lista de compras, como deve.
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+function _nm(s){
+  return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .toLowerCase().replace(/\s+/g,' ').trim();
+}
+
+/* nome que vale a pena cadastrar: nem sigla solta, nem frase inteira */
+function _nomeServe(nome){
+  var t = String(nome||'').trim();
+  if(t.length < 3 || t.length > 60) return false;
+  if(t.split(/\s+/).length > 6) return false;      // isso é observação, não material
+  if(!/[a-zà-ÿ]/i.test(t)) return false;           // só número/símbolo, não
+  return true;
+}
+
+/* linha de balão ou fita escolhe do select — não se cadastra por aqui */
+function _linhaDeTexto(row){
+  var t = row && row.dataset ? row.dataset.tipo : '';
+  return t !== 'balao' && t !== 'fita';
+}
+
+function _nomeDaLinha(row){
+  var i = row && row.querySelector ? row.querySelector('.mat-nome') : null;
+  return i ? (i.value||'').trim() : '';
+}
+
+/* o unitário que ela digitou: mora no dataset desde 02/09 */
+function _unitDaLinha(row){
+  var u = parseFloat(row && row.dataset ? row.dataset.unit : '');
+  if(u > 0) return u;
+  var c = row && row.querySelector ? row.querySelector('.mat-valor') : null;
+  u = c ? parseFloat(c.value) : NaN;
+  return (u > 0) ? u : 0;
+}
+
+/* ── o coração: garante o material na lista, com o preço ─────────── */
+function cadastrarMaterialDaLinha(row, calado){
+  try{
+    if(!row || !_linhaDeTexto(row)) return null;
+    if(typeof estoque === 'undefined' || !Array.isArray(estoque)) return null;
+
+    var nome = _nomeDaLinha(row);
+    if(!_nomeServe(nome)) return null;
+
+    var unit  = _unitDaLinha(row);
+    var agora = Date.now();
+
+    /* já existe? então só cuida do preço (o app já fazia isso, mas
+       aqui pega também o caso do material que veio sem preço). */
+    var achou = (typeof _matchEstoque === 'function') ? _matchEstoque(nome) : null;
+    if(!achou){
+      achou = estoque.filter(function(e){ return e && _nm(e.nome) === _nm(nome); })[0] || null;
+    }
+    if(achou){
+      row.dataset.itemId = achou.id;
+      if(unit > 0 && !(parseFloat(achou.preco) > 0)){
+        achou.preco = unit; achou.precoEm = agora; achou.precoFonte = 'manual';
+        achou.updatedAt = agora;
+        if(typeof DB !== 'undefined') DB.set('est', estoque);
+        if(typeof save === 'function') save();
+      }
+      return achou;
+    }
+
+    /* material novo só entra quando ela já disse quanto custa —
+       senão o estoque enche de nome pela metade enquanto ela digita */
+    if(!(unit > 0)) return null;
+
+    var cat = 'Outros';
+    try{ if(typeof classificarMaterial === 'function') cat = classificarMaterial(nome, '') || 'Outros'; }catch(e){}
+
+    var novo = {
+      id: (typeof uid === 'function') ? uid() : ('e' + Math.random().toString(36).slice(2,9)),
+      nome: nome, cat: cat, un: 'un',
+      qtd: 0, min: 0,                       // ela ainda não comprou
+      preco: unit, precoEm: agora, precoFonte: 'manual',
+      forn: '', consumo: false, updatedAt: agora
+    };
+    estoque.push(novo);
+    row.dataset.itemId = novo.id;
+    row.dataset.valorEm = agora;
+
+    if(typeof DB !== 'undefined') DB.set('est', estoque);
+    if(typeof save === 'function') save();
+    if(typeof renderEstoque === 'function'){ try{ renderEstoque(); }catch(e){} }
+    if(typeof popularDatalistEstoque === 'function'){ try{ popularDatalistEstoque(); }catch(e){} }
+    if(typeof atualizarStatusMaterial === 'function' && row.id){
+      try{ atualizarStatusMaterial(row.id); }catch(e){}
+    }
+    if(!calado && typeof toast === 'function'){
+      toast('<span class=ic-caixa></span> "' + nome + '" entrou na lista de materiais · R$ ' +
+            unit.toFixed(2).replace('.',',') + ' por unidade');
+    }
+    return novo;
+  }catch(e){ console.warn('cadastrarMaterialDaLinha', e); return null; }
+}
+window._cadastrarMaterialDaLinha = cadastrarMaterialDaLinha;
+
+/* ── quando tentar ──
+   Só depois que ela sai do nome (senão cadastraria "G", "Gl", "Gli"...)
+   e com uma espera curta depois do preço, porque cada cadastro grava
+   no aparelho e manda pra nuvem. */
+var _timer = null;
+function _agendar(row, ms){
+  clearTimeout(_timer);
+  _timer = setTimeout(function(){
+    var campoNome = row.querySelector('.mat-nome');
+    if(campoNome && document.activeElement === campoNome) return;   // ainda digitando o nome
+    cadastrarMaterialDaLinha(row);
+  }, ms || 1100);
+}
+
+function _linhaDe(el){
+  return (el && el.closest) ? el.closest('#p-materiais-lista .material-row') : null;
+}
+
+document.addEventListener('change', function(e){
+  if(!e.target || !e.target.classList) return;
+  if(e.target.classList.contains('mat-nome')){
+    var row = _linhaDe(e.target);
+    if(row) _agendar(row, 250);
+  }
+});
+document.addEventListener('focusout', function(e){
+  if(!e.target || !e.target.classList) return;
+  if(e.target.classList.contains('mat-nome') || e.target.classList.contains('mat-valor')){
+    var row = _linhaDe(e.target);
+    if(row) _agendar(row, 250);
+  }
+});
+document.addEventListener('input', function(e){
+  if(!e.target || !e.target.classList) return;
+  if(e.target.classList.contains('mat-valor')){
+    var row = _linhaDe(e.target);
+    if(row) _agendar(row, 1400);
+  }
+});
+
+/* ── rede de segurança: ao salvar o pedido, varre tudo ──
+   Se ela digitou o preço e mandou salvar sem sair do campo, a espera
+   acima não chegou a rodar. Aqui nada se perde. */
+function _varrer(){
+  var lista = document.getElementById('p-materiais-lista');
+  if(!lista) return 0;
+  var n = 0;
+  [].slice.call(lista.querySelectorAll('.material-row')).forEach(function(row){
+    var antes = (typeof estoque !== 'undefined') ? estoque.length : 0;
+    cadastrarMaterialDaLinha(row, true);
+    if((typeof estoque !== 'undefined' ? estoque.length : 0) > antes) n++;
+  });
+  return n;
+}
+window._varrerMateriaisNovos = _varrer;
+
+var _coletarOrigMat = window.coletarMateriaisPedido;
+if(typeof _coletarOrigMat === 'function'){
+  window.coletarMateriaisPedido = function(){
+    try{ _varrer(); }catch(e){}
+    return _coletarOrigMat.apply(this, arguments);
+  };
+}
 
 })();
 </script>
