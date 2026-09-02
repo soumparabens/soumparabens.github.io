@@ -1974,6 +1974,12 @@ function _mudarFiltroMes(val){
       </div>
 
       <div style="margin-top:14px;border-top:1px solid var(--gray);padding-top:12px">
+        <p style="font-size:11px;font-weight:700;color:var(--brown);margin-bottom:8px"><span class=ic-baixar></span> Instalar na tela inicial</p>
+        <button class="btn btn-ghost btn-sm" id="btn-instalar-app" style="width:100%;border-color:var(--gold);color:var(--brown)" onclick="_instalarApp()"><span class=ic-baixar></span> <span id="btn-instalar-label">Instalar o app</span></button>
+        <p style="font-size:10px;color:var(--gray-d);margin-top:6px;line-height:1.6" id="txt-instalar-app">Fica com ícone próprio na tela do celular, abre em tela cheia e funciona sem internet.</p>
+      </div>
+
+      <div style="margin-top:14px;border-top:1px solid var(--gray);padding-top:12px">
         <p style="font-size:11px;font-weight:700;color:var(--brown);margin-bottom:8px"><span class=ic-cadeado></span> Senha de abertura do app</p>
         <button class="btn btn-ghost btn-sm" style="width:100%;border-color:var(--cyan);color:var(--cyan-d)" onclick="abrirConfigSenha()"><span id="btn-senha-label">Definir senha</span></button>
         <p style="font-size:10px;color:var(--gray-d);margin-top:6px">Pede uma senha toda vez que abrir o app neste aparelho.</p>
@@ -9273,7 +9279,7 @@ window._renderUltimaSync = function(){
   try{
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
-    var ver='v02/09-c29';
+    var ver='v02/09-c30';
     var txt;
     if(!t){ txt=ver+' · <span class=ic-nuvem></span> sem sync ainda'; }
     else{
@@ -14661,6 +14667,129 @@ if(typeof _coletarOrigMat === 'function'){
     return _coletarOrigMat.apply(this, arguments);
   };
 }
+
+})();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   BOTÃO FIXO "INSTALAR O APP" NAS CONFIGURAÇÕES — 02/09
+
+   A faixa que aparece sozinha some para sempre depois que ela toca no
+   X, e no iPhone o Safari nunca a mostra. Então o botão fica ali,
+   parado, para quando ela (ou a Laura) precisar.
+
+   Três situações, três respostas — nada de botão que não faz nada:
+     · já instalado          → avisa e desliga o botão
+     · Chrome com o convite  → abre a caixa de instalar de verdade
+     · iPhone / sem convite  → explica o caminho do menu, passo a passo
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+function _el(id){ return document.getElementById(id); }
+
+function _jaInstalado(){
+  try{
+    if(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+    if(navigator.standalone) return true;              // iPhone
+  }catch(e){}
+  return false;
+}
+function _ehIOS(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent||'') && !window.MSStream;
+}
+function _temConvite(){
+  try{ return !!deferredPrompt; }catch(e){ return false; }
+}
+
+/* o botão conta a verdade antes de ser tocado */
+function _pintarBotao(){
+  var btn = _el('btn-instalar-app'), lbl = _el('btn-instalar-label'), txt = _el('txt-instalar-app');
+  if(!btn) return;
+
+  if(_jaInstalado()){
+    if(lbl) lbl.textContent = 'Já está instalado';
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    btn.style.cursor = 'default';
+    if(txt) txt.innerHTML = 'Você já está usando o app instalado neste aparelho.';
+    return;
+  }
+  btn.disabled = false;
+  btn.style.opacity = '';
+  btn.style.cursor = 'pointer';
+  if(lbl) lbl.textContent = _temConvite() ? 'Instalar o app' : 'Como instalar';
+  if(txt) txt.innerHTML = 'Fica com ícone próprio na tela do celular, abre em tela cheia e funciona sem internet.';
+}
+window._pintarBotaoInstalar = _pintarBotao;
+
+/* o passo a passo, quando o navegador não oferece a caixa pronta */
+function _explicar(){
+  var txt = _el('txt-instalar-app'); if(!txt) return;
+  txt.innerHTML = _ehIOS()
+    ? ('<b>No iPhone/iPad:</b><br>' +
+       '1 · toque no botão de compartilhar (o quadradinho com a seta para cima), embaixo<br>' +
+       '2 · role e escolha <b>Adicionar à Tela de Início</b><br>' +
+       '3 · toque em <b>Adicionar</b>, no canto de cima<br>' +
+       '<span style="color:var(--gray-d)">O Safari não deixa o app instalar sozinho — tem que ser por aí.</span>')
+    : ('<b>Pelo menu do navegador:</b><br>' +
+       '1 · toque nos três pontinhos, no canto de cima<br>' +
+       '2 · escolha <b>Instalar aplicativo</b> ou <b>Adicionar à tela inicial</b><br>' +
+       '3 · confirme<br>' +
+       '<span style="color:var(--gray-d)">O convite automático só aparece uma vez por aparelho — depois disso é por aqui.</span>');
+  txt.style.background = 'var(--cream)';
+  txt.style.borderLeft = '2.5px solid var(--gold)';
+  txt.style.padding = '9px 11px';
+  txt.style.borderRadius = '0 8px 8px 0';
+  txt.style.lineHeight = '1.8';
+}
+
+window._instalarApp = function(){
+  if(_jaInstalado()){
+    if(typeof toast === 'function') toast('<span class=ic-check></span> O app já está instalado neste aparelho.');
+    _pintarBotao();
+    return;
+  }
+  if(_temConvite()){
+    try{
+      if(typeof installApp === 'function'){ installApp(); }
+      else { deferredPrompt.prompt(); deferredPrompt = null; }
+      var txt = _el('txt-instalar-app');
+      if(txt) txt.innerHTML = 'Confirme na caixinha que o navegador abriu. Se ela não aparecer, ' +
+        'use o menu de três pontinhos <span class=ic-seta></span> Instalar aplicativo.';
+      /* instalou? o botão se atualiza sozinho pelo evento appinstalled */
+      return;
+    }catch(e){ /* cai no passo a passo */ }
+  }
+  _explicar();
+};
+
+window.addEventListener('appinstalled', function(){
+  _pintarBotao();
+  if(typeof toast === 'function') toast('<span class=ic-check></span> App instalado! Procure o ícone na tela do celular.');
+});
+
+/* deixa o botão certo toda vez que as Configurações abrem */
+var _openInst = window.openModal;
+if(typeof _openInst === 'function'){
+  window.openModal = function(id){
+    var r = _openInst.apply(this, arguments);
+    if(id === 'modal-sync') setTimeout(_pintarBotao, 60);
+    return r;
+  };
+}
+var _confInst = window.openSyncConfig;
+if(typeof _confInst === 'function'){
+  window.openSyncConfig = function(){
+    var r = _confInst.apply(this, arguments);
+    setTimeout(_pintarBotao, 80);
+    return r;
+  };
+}
+
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(_pintarBotao, 1800); });
+else setTimeout(_pintarBotao, 1800);
 
 })();
 </script>
