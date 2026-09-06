@@ -2245,6 +2245,9 @@ function openModal(id, isNew) {
 }
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
+  /* Fechou o formulário: se a nuvem trouxe novidade enquanto ela trabalhava,
+     é agora que ela entra. Ver _mesclarNuvem. */
+  if (window._aplicarMesclaPendente) window._aplicarMesclaPendente();
 }
 function resetModal(id) {
   const form = document.getElementById(id).querySelectorAll('input,select,textarea');
@@ -4462,10 +4465,29 @@ if('serviceWorker' in navigator) {
      nenhum, e recarregar ali só faria a tela piscar à toa. */
   const _tinhaControlador = !!navigator.serviceWorker.controller;
   let _jaRecarregou = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if(!_tinhaControlador || _jaRecarregou) return;
+
+  /* NUNCA recarregar com um formulário aberto. A primeira versão disto
+     recarregava na hora e fechou a tela na cara da Laura no meio de uma
+     edição — o que este projeto já tinha aprendido a não fazer.
+     Agora espera o modal fechar. A versão nova entra quando ela terminar
+     o que estava fazendo, que é quando não custa nada. */
+  function _recarregarQuandoDerCerto(){
+    if(_jaRecarregou) return;
+    /* Mesma regra da sincronização: formulário aberto ou cursor num campo
+       significa que tem gente trabalhando. Ver o bloco TELA OCUPADA. */
+    var ocupada = window._telaOcupada ? window._telaOcupada()
+                                      : !!document.querySelector('.modal-overlay.open');
+    if(ocupada){
+      setTimeout(_recarregarQuandoDerCerto, 1500);
+      return;
+    }
     _jaRecarregou = true;
     location.reload();
+  }
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if(!_tinhaControlador || _jaRecarregou) return;
+    _recarregarQuandoDerCerto();
   });
 }
 
@@ -8804,6 +8826,24 @@ syncToCloud = autoPush;
 /* MESCLAGEM REUTILIZÁVEL — usada pela planilha (autoPull) e pelo Firebase.
    Recebe os dados da nuvem e junta com os locais, registro a registro. */
 function _mesclarNuvem(d){
+  /* ─────────────────────────────────────────────────────────────────
+     NUNCA mesclar com um formulário aberto.
+
+     Esta função troca as listas (pedidos, estoque, catálogo...) e no fim
+     redesenha a tela. Se a Laura estiver no meio de um cadastro, ela perde
+     o que digitou — e sem aviso nenhum, porque para ela a tela só "fechou
+     sozinha". Chegava por três caminhos: o relógio de 60 segundos, o voltar
+     para o app, e o Firebase em tempo real quando o outro aparelho salva.
+
+     Agora, com formulário aberto, os dados ficam guardados e a mesclagem
+     acontece assim que ela fechar — quando não custa nada. É a mesma regra
+     que o app já seguia em outros lugares e que faltava aqui.
+     ───────────────────────────────────────────────────────────────── */
+  if (window._telaOcupada && window._telaOcupada()) {
+    window._mesclaPendente = d;   // vale a última: o mais recente é o que interessa
+    return;
+  }
+
   const tumbasNuvem = d._tumbas || [];
   const todasTumbas = tumbas.concat(tumbasNuvem);
   function mesclar(localArr, nuvemArr){
@@ -9310,7 +9350,7 @@ window._renderUltimaSync = function(){
        bloco de atualização (em Configurações) poder ler o número.
        Nada de escrever o padrão do selo entre aspas em comentário: o script
        leria o exemplo em vez do selo de verdade. Já aconteceu. */
-    var ver='v06/09-c32';
+    var ver='v06/09-c34';
     window.APP_VERSAO = ver;
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
@@ -9329,6 +9369,47 @@ window._renderUltimaSync = function(){
 };
 window._marcarSync = function(){ try{ localStorage.setItem('sp_ultimaSync', String(Date.now())); window._renderUltimaSync(); }catch(e){} };
 window.addEventListener('load', function(){ setTimeout(window._renderUltimaSync, 300); });
+</script>
+
+
+<!-- ════════ TELA OCUPADA — Claude set/2026 ════════════════════════════
+     A regra que faltava: nada redesenha a tela por cima de quem está
+     trabalhando. A sincronização (relógio de 60s, volta ao app, e o
+     Firebase em tempo real) trocava as listas e redesenhava no meio de um
+     cadastro — e para quem usa isso é simplesmente "a tela fechou sozinha
+     e perdi tudo".
+
+     Ocupada é: formulário aberto, OU o cursor dentro de um campo. O segundo
+     caso cobre as telas que editam sem modal, como a Precificação, onde o
+     redesenho chama calcPreco() e mexe direto nos campos.
+ ════════════════════════════════════════════════════════════════════ -->
+<script>
+window._telaOcupada = function(){
+  try{
+    if(document.querySelector('.modal-overlay.open')) return true;
+    var a = document.activeElement;
+    if(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.type !== 'hidden') return true;
+  }catch(e){}
+  return false;
+};
+
+window._mesclaPendente = null;
+
+window._aplicarMesclaPendente = function(){
+  if(!window._mesclaPendente) return;
+  if(window._telaOcupada()) return;          // ainda ocupada: espera mais
+  var d = window._mesclaPendente;
+  window._mesclaPendente = null;             // limpa ANTES, senão _mesclarNuvem guarda de novo
+  try{ if(typeof _mesclarNuvem === 'function') _mesclarNuvem(d); }catch(e){}
+};
+
+/* Rede de segurança: nem todo formulário fecha passando pelo closeModal
+   (tirar o cursor de um campo não fecha nada). Uma conferência leve a cada
+   3 segundos garante que a novidade da nuvem não fique esperando para
+   sempre. Só olha se existe pendência — sem pendência, não faz nada. */
+setInterval(function(){
+  if(window._mesclaPendente) window._aplicarMesclaPendente();
+}, 3000);
 </script>
 
 
