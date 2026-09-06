@@ -1985,6 +1985,18 @@ function _mudarFiltroMes(val){
         <p style="font-size:10px;color:var(--gray-d);margin-top:6px">Pede uma senha toda vez que abrir o app neste aparelho.</p>
       </div>
 
+      <div style="margin-top:14px;border-top:1px solid var(--gray);padding-top:12px">
+        <p style="font-size:11px;font-weight:700;color:var(--brown);margin-bottom:8px"><span class=ic-nuvem></span> Versão do app</p>
+        <div id="cfg-versao-app" style="font-size:13px;font-weight:700;color:var(--brown);background:var(--cream);border-left:2.5px solid var(--gold);padding:7px 9px;border-radius:0 8px 8px 0;margin-bottom:8px">—</div>
+        <button class="btn btn-ghost btn-sm" style="width:100%;border-color:var(--cyan);color:var(--cyan-d)" onclick="_procurarAtualizacao()"><span class=ic-buscar></span> Procurar atualização</button>
+        <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:6px;border-color:var(--orange);color:var(--orange)" onclick="_forcarAtualizacao()"><span class=ic-baixar></span> Forçar atualização (limpar cache)</button>
+        <div id="atu-status" style="font-size:11px;color:var(--gray-d);margin-top:7px;text-align:center;min-height:14px"></div>
+        <p style="font-size:10px;color:var(--gray-d);margin-top:4px;line-height:1.6">
+          <b>Procurar</b> confere se existe versão nova publicada e avisa.<br>
+          <b>Forçar</b> é a saída de emergência quando o app trava numa versão antiga: baixa tudo de novo do zero. <b>Os seus dados não são apagados.</b>
+        </p>
+      </div>
+
       <div style="margin-top:14px;border-top:1.5px dashed var(--red-l);padding-top:12px">
         <p style="font-size:11px;color:var(--red);font-weight:700;margin-bottom:8px"><span class=ic-aviso></span> Zona de perigo</p>
         <button class="btn" style="width:100%;background:var(--red-l);color:var(--red);font-weight:700;border:1.5px solid var(--red)" onclick="closeModal('modal-sync');setTimeout(()=>openModal('modal-reset',false),200)"><span class=ic-lixeira></span> Zerar pedidos e estoque</button>
@@ -4440,6 +4452,21 @@ function importData() { document.getElementById('import-input').click(); }
 // ── SERVICE WORKER ────────────────────────────────────────────
 if('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+  /* Quando uma versão nova assume o controle, a tela ainda está rodando o
+     código velho que já tinha sido carregado. Sem recarregar, a Laura publica
+     a correção e continua vendo o app antigo — sem nenhum aviso de erro.
+
+     Só recarrega quando JÁ HAVIA um service worker no comando: aí a troca é
+     uma atualização de verdade. Na primeira visita não havia controlador
+     nenhum, e recarregar ali só faria a tela piscar à toa. */
+  const _tinhaControlador = !!navigator.serviceWorker.controller;
+  let _jaRecarregou = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if(!_tinhaControlador || _jaRecarregou) return;
+    _jaRecarregou = true;
+    location.reload();
+  });
 }
 
 // ── INSTALL PROMPT ────────────────────────────────────────────
@@ -9277,9 +9304,16 @@ function excluirAtivo(id){
 <script>
 window._renderUltimaSync = function(){
   try{
+    /* O selo abaixo continua no formato de sempre (v + dia/mês + traço + c +
+       número) porque é o que o sincronizar-versao.js carimba no sw.js e o que
+       os testes procuram. Só subiu de lugar e ganhou uma cópia global, para o
+       bloco de atualização (em Configurações) poder ler o número.
+       Nada de escrever o padrão do selo entre aspas em comentário: o script
+       leria o exemplo em vez do selo de verdade. Já aconteceu. */
+    var ver='v06/09-c32';
+    window.APP_VERSAO = ver;
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
-    var ver='v02/09-c30';
     var txt;
     if(!t){ txt=ver+' · <span class=ic-nuvem></span> sem sync ainda'; }
     else{
@@ -9295,6 +9329,70 @@ window._renderUltimaSync = function(){
 };
 window._marcarSync = function(){ try{ localStorage.setItem('sp_ultimaSync', String(Date.now())); window._renderUltimaSync(); }catch(e){} };
 window.addEventListener('load', function(){ setTimeout(window._renderUltimaSync, 300); });
+</script>
+
+
+<!-- ════════ ATUALIZAÇÃO DO APP (Configurações) — Claude set/2026 ════════
+     Dois botões que resolvem a mesma dor por caminhos diferentes:
+     "Procurar" pergunta ao servidor qual versão está publicada e compara.
+     "Forçar" é a marreta: desliga o app guardado no aparelho e baixa do zero.
+
+     Por que a marreta precisa existir: quando o service worker antigo trava,
+     ele serve o app velho e não há nada dentro do app que o convença a sair.
+     A alternativa seria ensinar a Laura a abrir o F12 — que em alguns
+     notebooks nem é F12, é tecla de volume.
+ ════════════════════════════════════════════════════════════════════════ -->
+<script>
+window._procurarAtualizacao = async function(){
+  var st = document.getElementById('atu-status');
+  function diz(msg){ if(st) st.textContent = msg; }
+  diz('Procurando...');
+  try{
+    /* cache:'no-store' + carimbo de hora na URL: as duas coisas juntas para
+       nenhuma camada de cache devolver a cópia velha justamente na hora de
+       conferir se existe versão nova. */
+    var r = await fetch('./index.html?conferir=' + Date.now(), {cache:'no-store'});
+    var txt = await r.text();
+    var m = txt.match(/var\s+ver\s*=\s*'([^']+)'/);
+    if(!m){ diz('Não consegui ler a versão publicada.'); return; }
+    var noAr = m[1];
+    var aqui = window.APP_VERSAO || '(desconhecida)';
+    if(noAr === aqui){ diz('Tudo certo: você já está na versão ' + aqui + '.'); return; }
+    diz('Versão nova publicada: ' + noAr);
+    if(confirm('Existe uma versão nova do app.\n\nNeste aparelho: ' + aqui + '\nPublicada: ' + noAr + '\n\nAtualizar agora?')){
+      window._forcarAtualizacao(true);
+    }
+  }catch(e){
+    diz('Não consegui conferir. Veja se está com internet.');
+  }
+};
+
+window._forcarAtualizacao = async function(semPerguntar){
+  if(!semPerguntar && !confirm('Isso baixa o app de novo, do zero.\n\nOs seus pedidos, estoque e financeiro NÃO são apagados.\n\nContinuar?')) return;
+  var st = document.getElementById('atu-status');
+  if(st) st.textContent = 'Limpando e baixando de novo...';
+  try{
+    if('serviceWorker' in navigator){
+      var regs = await navigator.serviceWorker.getRegistrations();
+      for(var i=0;i<regs.length;i++){ await regs[i].unregister(); }
+    }
+    /* Só o Cache Storage (os arquivos do app). O localStorage, onde moram os
+       dados da Laura, não é tocado de propósito. */
+    if(window.caches){
+      var chaves = await caches.keys();
+      for(var j=0;j<chaves.length;j++){ await caches.delete(chaves[j]); }
+    }
+  }catch(e){}
+  location.replace(location.pathname + '?atualizado=' + Date.now());
+};
+
+/* Mostra o número na tela de Configurações assim que o app abre. */
+window.addEventListener('load', function(){
+  setTimeout(function(){
+    var el = document.getElementById('cfg-versao-app');
+    if(el) el.textContent = window.APP_VERSAO || '—';
+  }, 350);
+});
 </script>
 
 <!-- <span class=ic-cadeado></span> SENHA DE ABERTURA (trava local) -->
@@ -10676,7 +10774,27 @@ function _fichaRecibo(p){
 }
 
 /* ── COMANDA DE PRODUÇÃO ───────────────────────────────────────── */
+/* 04/09: a comanda é papel de bancada — vai para quem produz, não para
+   o caixa. Então nada de cobrança aqui: saem a linha da taxa do cartão
+   e as taxas de serviço (entrega), que não são coisa de fazer.
+   Data de entrega, endereço, itens e materiais continuam, claro. */
+function _semCobranca(p){
+  if(!p) return p;
+  var copia = {};
+  for(var k in p){ if(Object.prototype.hasOwnProperty.call(p,k)) copia[k] = p[k]; }
+  copia.itens = (p.itens||[]).filter(function(it){
+    if(!it) return false;
+    if(it.taxaCartao) return false;
+    try{ if(typeof _ehServicoNome === 'function' && _ehServicoNome(it.nome)) return false; }catch(e){}
+    if(/^\s*taxa\s+(do\s+cart|de\s+(entrega|servi|frete))/i.test(String(it.nome||''))) return false;
+    return true;
+  });
+  return copia;
+}
+window._comandaSemCobranca = _semCobranca;
+
 function _fichaComanda(p){
+  p = _semCobranca(p);
   return '<div class="ficha">'+
     _cabecalho(p, 'COMANDA DE PRODUÇÃO')+
     _dadosCliente(p, true)+
@@ -12167,7 +12285,16 @@ function montarPainelComandas(){
       '<div class="modal-title"><span class=ic-prancheta></span> Imprimir comandas</div>'+
       '<div class="modal-body">'+
         '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'+
-          '<div style="flex:1;min-width:130px">'+
+          '<div style="flex:1;min-width:150px">'+
+            '<label style="font-size:9.5px;color:var(--gray-d);font-weight:700;display:block;margin-bottom:2px">MOSTRAR</label>'+
+            '<select id="cmd-periodo" class="form-select" style="font-size:12.5px;padding:8px" onchange="_trocarPeriodoComandas()">'+
+              '<option value="abertos">Todos os pedidos em aberto</option>'+
+              '<option value="hoje">Entrega hoje</option>'+
+              '<option value="semana">Próximos 7 dias</option>'+
+              '<option value="data">Escolher uma data...</option>'+
+            '</select>'+
+          '</div>'+
+          '<div style="flex:1;min-width:130px;display:none" id="cmd-data-box">'+
             '<label style="font-size:9.5px;color:var(--gray-d);font-weight:700;display:block;margin-bottom:2px">ENTREGA EM</label>'+
             '<input type="date" id="cmd-data" class="form-input" value="'+hoje+'" style="font-size:12.5px;padding:8px" onchange="_recarregarComandas()">'+
           '</div>'+
@@ -12189,7 +12316,8 @@ function montarPainelComandas(){
             '<span class=ic-imprimir></span> Imprimir selecionadas</button>'+
         '</div>'+
         '<div style="font-size:10px;color:var(--gray-d);margin-top:9px;line-height:1.5">'+
-          'Saem <b>2 comandas por folha</b>. Cada uma tem cliente, endereço, itens, materiais e o quadro de conferência.'+
+          'Saem <b>2 comandas por folha</b>. Cada uma tem cliente, endereço, data de entrega, itens, '+
+          'materiais e o quadro de conferência — <b>sem valores</b>, porque é papel de bancada.'+
         '</div>'+
       '</div>'+
       '<div class="modal-footer">'+
@@ -12206,27 +12334,100 @@ window.abrirComandas = function(){
   setTimeout(recarregarComandas, 60);
 };
 
+/* 04/09: antes só dava para ver UMA data por vez, e a Laura abria o
+   painel num dia sem entrega e via a lista vazia — parecia que as
+   comandas tinham sumido. Agora o padrão é mostrar TUDO que está em
+   aberto, e ela estreita se quiser. */
+function _hojeISO(){
+  var d = new Date();
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+}
+function _maisDias(n){
+  var d = new Date(); d.setDate(d.getDate()+n);
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+}
+function _periodoComandas(){
+  return (document.getElementById('cmd-periodo')||{}).value || 'abertos';
+}
+function _pedidosParaComanda(){
+  var per = _periodoComandas();
+  var st  = (document.getElementById('cmd-status')||{}).value || '__todos__';
+  var lista = [];
+  try {
+    lista = (pedidos||[]).filter(function(p){
+      if(!p || p.status === 'Cancelado') return false;
+      if(st !== '__todos__' && p.status !== st) return false;
+
+      if(per === 'abertos') return p.status !== 'Entregue';
+      if(per === 'hoje')    return p.dataEntrega === _hojeISO();
+      if(per === 'semana'){
+        var d = p.dataEntrega || '';
+        return d && d >= _hojeISO() && d <= _maisDias(7);
+      }
+      var alvo = (document.getElementById('cmd-data')||{}).value || '';
+      return !alvo || p.dataEntrega === alvo;
+    });
+  } catch(e){}
+  /* mais perto de entregar primeiro; sem data, no fim */
+  return lista.sort(function(a,b){
+    var da = a.dataEntrega || '9999-99-99', db = b.dataEntrega || '9999-99-99';
+    if(da !== db) return da < db ? -1 : 1;
+    return String(a.cliente||'').localeCompare(String(b.cliente||''),'pt-BR');
+  });
+}
+window._pedidosParaComanda = _pedidosParaComanda;
+
+window._trocarPeriodoComandas = function(){
+  var box = document.getElementById('cmd-data-box');
+  if(box) box.style.display = (_periodoComandas() === 'data') ? 'block' : 'none';
+  recarregarComandas();
+};
+
+function _dataCurta(iso){
+  if(!iso) return 'sem data';
+  var p = String(iso).split('-');
+  return (p.length === 3) ? (p[2]+'/'+p[1]) : iso;
+}
+
 function recarregarComandas(){
   var el = document.getElementById('cmd-lista');
   if(!el) return;
-  var data = (document.getElementById('cmd-data')||{}).value || '';
-  var st   = (document.getElementById('cmd-status')||{}).value || '__todos__';
-  var lista = _pedidosDoDia(data, st);
+  var per   = _periodoComandas();
+  var lista = _pedidosParaComanda();
 
   if(!lista.length){
-    el.innerHTML = '<div style="font-size:11.5px;color:var(--gray-d);padding:10px 0">'+
-      'Nenhum pedido com entrega nessa data.</div>';
+    var recado = (per === 'hoje')    ? 'Nenhum pedido com entrega hoje.'
+               : (per === 'semana')  ? 'Nenhum pedido com entrega nos próximos 7 dias.'
+               : (per === 'data')    ? 'Nenhum pedido com entrega nessa data.'
+               : 'Nenhum pedido em aberto.';
+    el.innerHTML = '<div style="font-size:11.5px;color:var(--gray-d);padding:10px 0;line-height:1.6">'+
+      recado + (per !== 'abertos'
+        ? '<br><span style="font-size:10.5px">Troque para <b>Todos os pedidos em aberto</b> para ver o resto.</span>'
+        : '') + '</div>';
     return;
   }
-  el.innerHTML = '<div style="max-height:240px;overflow-y:auto;background:#fff;border:1px solid var(--gray-l);border-radius:9px;padding:4px 6px">'+
+
+  /* na visão ampla vêm desmarcados, para ela não imprimir a papelada
+     inteira sem querer; num dia ou numa semana, já vêm marcados */
+  var marcar = (per !== 'abertos');
+
+  el.innerHTML =
+    '<div style="font-size:10.5px;color:var(--gray-d);font-weight:700;margin-bottom:5px">'+
+      lista.length + ' pedido' + (lista.length !== 1 ? 's' : '') +
+      (marcar ? '' : ' · marque os que quer imprimir') + '</div>'+
+    '<div style="max-height:240px;overflow-y:auto;background:#fff;border:1px solid var(--gray-l);border-radius:9px;padding:4px 6px">'+
     lista.map(function(p){
       return '<label style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #F5EEE2;cursor:pointer">'+
-        '<input type="checkbox" class="cmd-sel" data-id="'+p.id+'" checked style="width:16px;height:16px;accent-color:var(--brown)">'+
-        '<span style="flex:1;font-size:12px;color:#4A3B31;font-weight:600">'+
+        '<input type="checkbox" class="cmd-sel" data-id="'+p.id+'"'+(marcar?' checked':'')+
+          ' style="width:16px;height:16px;accent-color:var(--brown);flex-shrink:0">'+
+        '<span style="flex:1;font-size:12px;color:#4A3B31;font-weight:600;min-width:0">'+
           String(p.cliente||'(sem nome)').replace(/</g,'&lt;')+
           '<span style="display:block;font-size:10px;color:var(--gray-d);font-weight:400">'+
             String(p.produto||'').replace(/</g,'&lt;')+' · '+String(p.status||'')+'</span>'+
-        '</span></label>';
+        '</span>'+
+        '<span style="font-size:10px;font-weight:700;color:var(--brown);background:var(--cream);'+
+          'border-radius:20px;padding:3px 8px;flex-shrink:0">'+_dataCurta(p.dataEntrega)+'</span>'+
+        '</label>';
     }).join('') + '</div>';
 }
 window._recarregarComandas = recarregarComandas;
