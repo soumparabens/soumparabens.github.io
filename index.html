@@ -2233,11 +2233,26 @@ function openModal(id, isNew) {
   if (isNew) resetModal(id);
   const el = document.getElementById(id);
   el.classList.add('open');
-  // Formulários onde NÃO se fecha ao clicar no fundo (evita perder o que digitou)
-  if (id !== 'modal-pedido' && id !== 'modal-fin' && id !== 'modal-apikey') {
-    el.onclick = e => { if(e.target===e.currentTarget) closeModal(id); };
+  /* ─────────────────────────────────────────────────────────────────
+     Fechar ao clicar no fundo NUNCA vale para um formulário.
+
+     A regra já existia, mas como uma lista de três nomes — e os outros
+     treze modais do app ficaram de fora. A Laura perdeu um cadastro de
+     estoque assim em 06/09/2026: foi levar o dedo até o campo de
+     quantidade, o clique pegou o fundo, e o modal fechou levando tudo.
+     Instantâneo e sem aviso nenhum, impossível de entender de fora.
+
+     Agora a decisão é pelo CONTEÚDO, não por nome: tem campo para
+     preencher, não fecha clicando fora. Assim o modal que alguém criar
+     amanhã já nasce protegido, sem precisar lembrar de vir aqui.
+     Todos os 16 modais têm botão Cancelar ou Fechar — conferido — então
+     ninguém fica preso.
+     ───────────────────────────────────────────────────────────────── */
+  var _temCampos = !!el.querySelector('input:not([type="hidden"]), select, textarea');
+  if (_temCampos) {
+    el.onclick = null;               // só fecha pelo botão
   } else {
-    el.onclick = null; // só fecha pelo botão Fechar
+    el.onclick = e => { if(e.target===e.currentTarget) closeModal(id); };
   }
   if(id==='modal-pedido'){ var _pk=document.getElementById('p-cliente-picker'); if(_pk) _pk.style.display='none'; setTimeout(popularCatalogoSelect,60); setTimeout(popularDatalistClientes,60); }
   if(id==='modal-fin'){ if(isNew){ _estLinhas=[]; } setTimeout(_popularCategoriasFin,30); }
@@ -9350,7 +9365,7 @@ window._renderUltimaSync = function(){
        bloco de atualização (em Configurações) poder ler o número.
        Nada de escrever o padrão do selo entre aspas em comentário: o script
        leria o exemplo em vez do selo de verdade. Já aconteceu. */
-    var ver='v06/09-c35';
+    var ver='v06/09-c36';
     window.APP_VERSAO = ver;
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');

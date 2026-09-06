@@ -2,7 +2,7 @@
 // Estratégia "rede primeiro" (network-first): com internet baixa a versão nova;
 // sem internet usa o cache. Atualiza sozinho ao detectar um sw.js novo.
 // >>> Ao subir uma atualização, troque a data abaixo para forçar renovação. <<<
-const CACHE = 'soumparabens-v06-09-c35';
+const CACHE = 'soumparabens-v06-09-c36';
 
 self.addEventListener('install', (e) => { self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
