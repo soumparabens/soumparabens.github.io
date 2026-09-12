@@ -3630,18 +3630,34 @@ function renderCatalogo() {
    comecinho ser parecido, o que marcava como "coberto" coisa que não
    existe no estoque. Em caso de mais de um match, vale o mais específico. */
 function _normNome(s){ return (s||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' '); }
+/* Qual item do estoque é este material?
+   Escolhia o nome MAIS LONGO entre os que combinavam — então "xícara"
+   casava com "xícara com interno vermelho" mesmo existindo "xícara"
+   igualzinho no estoque. O preço que ela digitava ia para o item errado,
+   a baixa saía do item errado e no pedido seguinte voltava o preço de
+   outra coisa. Agora ganha o nome IGUAL; não havendo igual, ganha o
+   mais parecido em tamanho, que é o menos específico dos parentes.
+   (Claude 12/09/2026)                                                */
 function _matchEstoque(nome){
   const n=_normNome(nome);
   if(!n) return null;
-  let melhor=null, melhorLen=0;
+
+  let exato=null, aprox=null, menorDif=Infinity;
   estoque.forEach(function(e){
     const en=_normNome(e.nome);
     if(!en) return;
-    let ok = (en===n);
-    if(!ok && en.length>=4 && n.length>=4) ok = (n.includes(en) || en.includes(n));
-    if(ok && en.length>melhorLen){ melhor=e; melhorLen=en.length; }
+
+    if(en===n){ if(!exato) exato=e; return; }
+
+    /* plural bobo: "xicaras" no texto, "xicara" no estoque */
+    if(en+'s'===n || en===n+'s'){ if(!exato) exato=e; return; }
+
+    if(en.length>=4 && n.length>=4 && (n.includes(en) || en.includes(n))){
+      const dif=Math.abs(en.length-n.length);
+      if(dif<menorDif){ menorDif=dif; aprox=e; }
+    }
   });
-  return melhor;
+  return exato || aprox;
 }
 function checarEstoqueNome(nome, qtd) {
   if (!nome || !nome.trim() || !estoque.length) return 'pendente';
@@ -9403,7 +9419,7 @@ window._renderUltimaSync = function(){
        bloco de atualização (em Configurações) poder ler o número.
        Nada de escrever o padrão do selo entre aspas em comentário: o script
        leria o exemplo em vez do selo de verdade. Já aconteceu. */
-    var ver='v12/09-c39';
+    var ver='v12/09-c40';
     window.APP_VERSAO = ver;
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
@@ -9739,18 +9755,60 @@ else appLockInit();
   }
   window._matNomeDaLinha=_matNomeDaLinha;
 
+  /* --- preço emprestado da família ---------------------------------
+     "xícara" e "xícara com interno vermelho" são itens DIFERENTES: cada
+     um tem o seu preço, e o que ela digita numa não muda a outra. Mas
+     enquanto a variação não tem preço próprio, ela custa o mesmo que a
+     xícara comum — então o valor da base aparece na linha, para ela não
+     precisar digitar de novo em cada cor. É empréstimo, não cadastro:
+     fica marcado, não é gravado no item, e some assim que ela digitar
+     um preço próprio.                              (Claude 12/09/2026) */
+  function _precoDaFamilia(it){
+    if(!it || typeof _normNome!=='function') return null;
+    var n=_normNome(it.nome); if(!n) return null;
+    var pai=null, maior=0;
+    estoque.forEach(function(e){
+      if(!e || e.id===it.id) return;
+      if(!(parseFloat(e.preco)>0)) return;
+      var en=_normNome(e.nome);
+      if(!en || en.length<4) return;
+      /* o parente é o nome que COMEÇA o nome desta variação */
+      if(n.indexOf(en+' ')===0 && en.length>maior){ pai=e; maior=en.length; }
+    });
+    return pai;
+  }
+  window._precoDaFamilia=_precoDaFamilia;
+
   /* --- aplica o preço central na linha, se ele for mais novo --- */
   function _aplicarPrecoCentralNaLinha(row){
     if(!row) return;
     var campo=row.querySelector('.mat-valor'); if(!campo) return;
     var it=_itemCentral(row); if(!it) return;
-    var pc=parseFloat(it.preco)||0; if(!(pc>0)) return;
+
+    var pc=parseFloat(it.preco)||0;
     var pcEm=parseFloat(it.precoEm)||0;
+    var emprestado=null;
+
+    if(!(pc>0)){
+      emprestado=_precoDaFamilia(it);
+      if(!emprestado) return;
+      pc=parseFloat(emprestado.preco)||0;
+      pcEm=parseFloat(emprestado.precoEm)||0;
+      if(!(pc>0)) return;
+    }
+
     var linhaEm=parseFloat(row.dataset.valorEm)||0;
     var atual=parseFloat(campo.value)||0;
     if(!(atual>0) || pcEm>linhaEm){
       campo.value=pc.toFixed(2);
       row.dataset.valorEm=pcEm||Date.now();
+      if(emprestado){
+        row.dataset.precoHerdado='1';
+        row.dataset.precoDe=emprestado.nome;
+      } else {
+        delete row.dataset.precoHerdado;
+        delete row.dataset.precoDe;
+      }
     }
   }
   window._aplicarPrecoCentralNaLinha=_aplicarPrecoCentralNaLinha;
@@ -9778,6 +9836,9 @@ else appLockInit();
     var v=parseFloat(campo.value);
     var agora=Date.now();
     row.dataset.valorEm=agora;
+    /* digitou por cima do preço emprestado da família: agora é dela */
+    delete row.dataset.precoHerdado;
+    campo.title='Quanto custa UMA unidade deste material. O que você digitar vale para TODOS os kits.';
     if(v>0){
       var it=_itemCentral(row);
       if(it){
@@ -11366,9 +11427,21 @@ function _mostrarTotal(row){
   c.title = (q > 1)
     ? ('preço de uma unidade · ' + q + ' × R$ ' + _br(u) + ' = R$ ' + _br(total))
     : 'Custo por unidade deste material. Vale para todos os kits.';
+
+  /* Preço que veio emprestado de um material da mesma família (a xícara
+     comum, quando esta é "xícara com interno vermelho"): ela precisa ver
+     isso na tela, porque no celular ninguém passa o mouse por cima.   */
+  var emprestado = (row.dataset.precoHerdado === '1' && row.dataset.precoDe)
+    ? ' · <span style="color:var(--cyan-d)">preço de ' + row.dataset.precoDe + '</span>'
+    : '';
+  if(emprestado){
+    c.title = 'Preço de "' + row.dataset.precoDe + '". Se esta versão custa outro ' +
+              'valor, digite por cima que ele passa a valer só para ela.';
+  }
+
   _linhaCalc(row, (q > 1)
-    ? (q + ' × R$ ' + _br(u) + ' = <b style="color:var(--brown)">R$ ' + _br(total) + '</b>')
-    : '');
+    ? (q + ' × R$ ' + _br(u) + ' = <b style="color:var(--brown)">R$ ' + _br(total) + '</b>' + emprestado)
+    : (emprestado ? emprestado.replace(/^ · /, '') : ''));
   var rs = row.querySelector('.mat-rs');
   if(rs) rs.textContent = 'R$';
 }
@@ -11384,6 +11457,14 @@ window._matValorDigitado = function(rowId){
   var q = _qtd(row);
   var unit = (digitado > 0) ? (Math.round(digitado * 10000) / 10000) : 0;
   _setUnit(row, unit);
+
+  /* digitou por cima do preço emprestado da família: agora o preço é
+     desta variação, e ela deixa de acompanhar a base */
+  if(row.dataset.precoHerdado === '1'){
+    delete row.dataset.precoHerdado;
+    delete row.dataset.precoDe;
+    c.title = 'Custo por unidade deste material. Vale para todos os kits.';
+  }
 
   /* a conta embaixo acompanha enquanto ela digita */
   _linhaCalc(row, (unit > 0 && q > 1)
@@ -11585,6 +11666,10 @@ if(typeof _addOrig7 === 'function'){
       q.dataset.totalOn = '1';
       q.addEventListener('input', function(){ _mostrarTotal(row); if(typeof calcularGastoReal==='function') calcularGastoReal(); });
     }
+    /* O gasto era somado ANTES desta linha existir por completo, então
+       ficava sempre uma linha atrasado: ao puxar um kit, o total só
+       ficava certo quando ela encostava em algum campo. */
+    if(typeof calcularGastoReal === 'function') calcularGastoReal();
   };
 }
 
@@ -15026,6 +15111,9 @@ function cadastrarMaterialDaLinha(row, calado){
     }
     if(achou){
       row.dataset.itemId = achou.id;
+      /* preço que veio emprestado da família não vira preço próprio:
+         a variação continua sem preço até ela digitar um */
+      if(row.dataset.precoHerdado === '1') return achou;
       if(unit > 0 && !(parseFloat(achou.preco) > 0)){
         achou.preco = unit; achou.precoEm = agora; achou.precoFonte = 'manual';
         achou.updatedAt = agora;
@@ -15613,16 +15701,15 @@ else setTimeout(corrigirPedidos1209, 2200);
 
 <script>
 /* ══════════════════════════════════════════════════════════════════
-   I · A RECEITA QUE O APP APRENDE          (12/09/2026)
-   A Laura leva de 5 a 10 minutos por pedido, e o que mais come tempo
-   são os materiais: os 350 produtos que ela importou têm nome e preço,
-   mas nenhum tem ficha. Então ela digita os mesmos materiais do mesmo
-   kit toda vez que vende ele de novo.
-   Cadastrar 350 fichas de uma vez ninguém faz. Aqui o caminho é outro:
-   na primeira venda de cada produto, ao salvar, o app mostra o que ela
-   lançou e pergunta se aquilo é a receita. Dizendo que sim, a próxima
-   venda vem pronta num toque. O catálogo se preenche sozinho, no ritmo
-   do que ela realmente vende.
+   I · KIT NOVO A PARTIR DO QUE ELA MUDOU   (12/09/2026)
+   Os materiais já vêm da descrição do produto (303 dos 350 produtos
+   trazem a composição). O trabalho dela é ajustar: os pedidos são
+   personalizados e quase sempre sai algo diferente do padrão.
+   Gravar essa mudança por cima do produto do catálogo seria errado —
+   estragaria o padrão por causa de um pedido. Então, quando o kit sai
+   diferente do que veio, o app pergunta se ela quer guardar aquilo
+   como um KIT NOVO, com nome próprio. O produto original fica intacto
+   e o catálogo cresce com as combinações que ela realmente vende.
    ══════════════════════════════════════════════════════════════════ */
 (function(){
 'use strict';
@@ -15642,10 +15729,47 @@ function _produtoPorNome(nome){
   }catch(e){ return null; }
 }
 
+/* a lista de materiais virada em texto, para comparar antes e depois */
+function _assinatura(lista){
+  return (lista||[]).map(function(m){
+    return _nm(m.nome)+'|'+_r3(m.qtd);
+  }).sort().join(';');
+}
+
+/* O que veio do catálogo nesta puxada, para saber depois se ela mudou */
+var _kitOrigem = null;
+var _puxarOrig = window.puxarProdutoCatalogo;
+if(typeof _puxarOrig==='function'){
+  window.puxarProdutoCatalogo = function(id){
+    var r=_puxarOrig.apply(this, arguments);
+    setTimeout(function(){
+      try{
+        var itens=(document.querySelectorAll('#p-itens-lista .item-pedido-row')||[]).length;
+        var prod=(catalogo||[]).filter(function(p){ return p && p.id===id; })[0];
+        if(!prod || itens!==1){ _kitOrigem=null; return; }   // dois produtos: some de quem é
+        _kitOrigem={ id:prod.id, nome:prod.nome,
+                     assinatura:_assinatura(coletarMateriaisPedido()) };
+      }catch(e){ _kitOrigem=null; }
+    }, 250);
+    return r;
+  };
+}
+window._kitOrigemAgora = function(){ return _kitOrigem; };
+
+/* pedido novo começa sem origem nenhuma */
+var _resetKitOrig = window.resetModal;
+if(typeof _resetKitOrig==='function'){
+  window.resetModal = function(id){
+    var r=_resetKitOrig.apply(this, arguments);
+    if(id==='modal-pedido') _kitOrigem=null;
+    return r;
+  };
+}
+
 /* Lê o que está na tela ANTES de salvar — depois o modal fecha e some.
-   Devolve null quando não dá para saber de quem é a receita: pedido com
+   Devolve null quando não dá para saber de quem é o kit: pedido com
    vários produtos e materiais soltos é ambíguo, e chutar aqui encheria
-   o catálogo de receita errada.                                      */
+   o catálogo de kit errado.                                          */
 function _lerProposta(){
   try{
     if(typeof coletarItensPedido!=='function' || typeof coletarMateriaisPedido!=='function') return null;
@@ -15656,7 +15780,7 @@ function _lerProposta(){
       if(typeof window._ehEntregaNome==='function' && window._ehEntregaNome(it.nome)) return false;
       return true;
     });
-    if(!itens.length) return null;
+    if(itens.length!==1) return null;          // só com um produto dá para saber
 
     var mats=(coletarMateriaisPedido()||[]).filter(function(m){
       if(!m || !m.nome || !(Number(m.qtd)>0)) return false;
@@ -15665,25 +15789,19 @@ function _lerProposta(){
     });
     if(!mats.length) return null;
 
-    /* de qual item é essa receita? */
-    var alvo=-1;
-    if(itens.length===1){
-      alvo=0;
-    } else {
-      var comVinculo=mats.filter(function(m){ return m.doItem!=null; });
-      if(comVinculo.length!==mats.length) return null;
-      var primeiro=comVinculo[0].doItem;
-      if(!comVinculo.every(function(m){ return m.doItem===primeiro; })) return null;
-      alvo=primeiro;
+    var item=itens[0];
+    var base=_kitOrigem || null;
+    /* não veio do catálogo nesta sessão? tenta pelo nome do item */
+    if(!base){
+      var achado=_produtoPorNome(item.nome);
+      if(achado) base={ id:achado.id, nome:achado.nome,
+                        assinatura:_assinatura((achado.materiais||[]).map(function(m){
+                          return { nome:m.nome, qtd:(Number(m.qtd)||0)*(Number(item.qtd)||1) };
+                        })) };
     }
-    var item=itens[alvo]; if(!item) return null;
+    if(!base) return null;                     // produto fora do catálogo
 
-    var prod=_produtoPorNome(item.nome);
-    if(!prod) return null;                                   // não está no catálogo
-    if(prod.materiais && prod.materiais.length) return null; // já tem receita
-    if(prod.semReceita) return null;                         // ela já disse que não
-
-    /* a receita é POR UNIDADE: 7 xícaras num pedido de 7 kits = 1 por kit */
+    /* a composição é POR UNIDADE: 4 caixas num pedido de 2 kits = 2 por kit */
     var qtdItem=Number(item.qtd)||1; if(qtdItem<=0) qtdItem=1;
     var receita=mats.map(function(m){
       return { nome:m.nome, qtd:_r3((Number(m.qtd)||0)/qtdItem),
@@ -15691,10 +15809,16 @@ function _lerProposta(){
     }).filter(function(m){ return m.qtd>0; });
     if(!receita.length) return null;
 
-    return { id:prod.id, nome:prod.nome, receita:receita,
+    /* ficou igual ao que veio? então não há kit novo nenhum */
+    if(_assinatura(mats)===base.assinatura) return null;
+
+    return { base:base.nome, receita:receita,
+             preco:_r2((Number(item.preco)||0)),
+             sugestao:(_gvSeguro('p-produto') || base.nome),
              matCusto:_r2(receita.reduce(function(s,m){ return s+m.qtd*m.valor; },0)) };
-  }catch(e){ console.warn('[receita] não consegui ler:', e && e.message); return null; }
+  }catch(e){ console.warn('[kit] não consegui ler:', e && e.message); return null; }
 }
+function _gvSeguro(id){ var e=_el(id); return e ? (e.value||'').trim() : ''; }
 
 function _perguntar(p){
   try{
@@ -15704,37 +15828,54 @@ function _perguntar(p){
     }).join('\n');
     if(p.receita.length>8) linhas += '\n   • (e mais ' + (p.receita.length-8) + ')';
 
-    var texto = 'Guardar estes materiais como a receita de "' + p.nome + '"?\n\n' +
+    var texto = 'Este kit ficou diferente de "' + p.base + '".\n\n' +
                 linhas + '\n\n' +
-                'Da próxima vez que você puxar "' + p.nome + '" do catálogo, ' +
-                'eles já vêm preenchidos e você não digita de novo.';
+                'Quer guardar esta combinação como um kit novo no catálogo? ' +
+                '"' + p.base + '" continua como está.';
 
-    var sim = window.confirm(texto);
-    var prod=(catalogo||[]).filter(function(x){ return x && x.id===p.id; })[0];
-    if(!prod) return;
+    if(!window.confirm(texto)) return;
 
-    if(sim){
-      prod.materiais = p.receita;
-      prod.matCusto  = p.matCusto;
-      prod.updatedAt = Date.now();
-      if(typeof DB!=='undefined') DB.set('catalogo', catalogo);
-      if(typeof save==='function') save();
-      if(typeof renderCatalogo==='function'){ try{ renderCatalogo(); }catch(e){} }
+    var sugestao = (p.sugestao && _nm(p.sugestao)!==_nm(p.base))
+      ? p.sugestao : (p.base + ' — versão nova');
+    var nome = window.prompt('Nome do kit novo:', sugestao);
+    if(nome==null) return;                        // desistiu na hora do nome
+    nome=String(nome).trim();
+    if(!nome) return;
+
+    /* nome repetido vira confusão no catálogo e na busca */
+    if(_produtoPorNome(nome)){
       if(typeof toast==='function'){
-        toast('<span class=ic-ok></span> Receita de "' + p.nome + '" guardada. ' +
-              'O próximo pedido vem pronto.');
+        toast('<span class=ic-aviso></span> Já existe "' + nome + '" no catálogo. ' +
+              'Nada foi criado — tente outro nome.');
       }
-    } else {
-      /* não insiste: quem disse não uma vez não quer ser perguntado sempre */
-      prod.semReceita = true;
-      prod.updatedAt = Date.now();
-      if(typeof DB!=='undefined') DB.set('catalogo', catalogo);
-      if(typeof save==='function') save();
+      return;
     }
-  }catch(e){ console.warn('[receita] não guardei:', e && e.message); }
+
+    var base=(catalogo||[]).filter(function(x){ return x && _nm(x.nome)===_nm(p.base); })[0] || {};
+    var descricao='Contém ' + p.receita.map(function(m){
+      return String(m.qtd).replace('.',',') + ' ' + m.nome;
+    }).join(', ') + '.';
+
+    var novo={
+      id:(typeof uid==='function') ? uid() : ('c'+Math.random().toString(36).slice(2,9)),
+      nome:nome, cat:base.cat||'Kits', descricao:descricao,
+      preco:p.preco>0 ? p.preco : (Number(base.preco)||0),
+      custo:p.matCusto, matCusto:p.matCusto, mg:0,
+      materiais:p.receita, criadoDe:base.id||null, updatedAt:Date.now()
+    };
+    catalogo.push(novo);
+    if(typeof DB!=='undefined') DB.set('catalogo', catalogo);
+    if(typeof save==='function') save();
+    if(typeof renderCatalogo==='function'){ try{ renderCatalogo(); }catch(e){} }
+    if(typeof popularCatalogoSelect==='function'){ try{ popularCatalogoSelect(); }catch(e){} }
+    if(typeof toast==='function'){
+      toast('<span class=ic-ok></span> Kit "' + nome + '" criado. ' +
+            'Da próxima vez é só puxar do catálogo.');
+    }
+  }catch(e){ console.warn('[kit] não criei:', e && e.message); }
 }
-window._propostaDeReceita = _lerProposta;
-window._guardarReceita = _perguntar;
+window._propostaDeKit = _lerProposta;
+window._criarKitNovo = _perguntar;
 
 var _salvarOrig = window.salvarPedido;
 if(typeof _salvarOrig==='function'){
