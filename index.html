@@ -889,8 +889,10 @@ html, body {
   }
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Bibliotecas guardadas junto com o app (pasta lib), nao mais baixadas de servidor de terceiro.
+     Assim graficos, Excel e PDF continuam funcionando mesmo se a internet ou a CDN cair. -->
+<script src="lib/chart.umd.min.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
 </head>
 <body>
 <div style="font-size:12px;color:#C99953;letter-spacing:1px;margin-top:4px;">PRESENTES PERSONALIZADOS</div></div></div>
@@ -1587,6 +1589,10 @@ function _mudarFiltroMes(val){
         <label class="form-label"><span class=ic-dinheiro></span> Taxa desta venda (%)</label>
         <input class="form-input" id="p-taxa" type="number" step="0.01" min="0" max="99"
                placeholder="digite a taxa da maquininha" inputmode="decimal" oninput="_aplicarTaxaCartao()">
+        <select class="form-select" id="p-taxa-quem" style="margin-top:6px" onchange="_aplicarTaxaCartao()">
+          <option value="loja">Quem paga a taxa: eu (sai do meu lucro)</option>
+          <option value="cliente">Quem paga a taxa: a cliente (soma no total)</option>
+        </select>
         <p style="font-size:10px;color:var(--gray-d);margin-top:4px" id="p-taxa-info"></p>
       </div>
       <div class="form-group">
@@ -1598,11 +1604,17 @@ function _mudarFiltroMes(val){
       <div class="field-group" style="margin-bottom:8px">
         <label class="form-label">GASTO COM MATERIAIS (R$)</label>
         <input type="number" id="p-custo" class="form-input" placeholder="0,00" step="0.01" min="0" oninput="calcularLucro()">
-        <div style="font-size:10px;color:var(--gray-d);margin-top:3px">Soma de cada material abaixo — quantidade × preço da unidade (pode ajustar). Gasto real: <b id="p-gasto-real" style="color:var(--cyan-d)">R$ 0,00</b></div>
+        <div style="font-size:10px;color:var(--gray-d);margin-top:3px">Soma de cada material abaixo — quantidade × preço da unidade. Gasto real: <b id="p-gasto-real" style="color:var(--cyan-d)">R$ 0,00</b></div>
+      </div>
+      <div class="field-group" style="margin-bottom:8px">
+        <label class="form-label">ENTREGA (R$) — QUEM PAGA É A LOJA</label>
+        <input type="number" id="p-entrega" class="form-input" placeholder="0,00" step="0.01" min="0" oninput="calcularLucro()">
+        <div style="font-size:10px;color:var(--gray-d);margin-top:3px">O que <b>você</b> gasta para entregar este pedido. Sai do seu lucro e não é cobrado da cliente.</div>
       </div>
       <div style="background:var(--pink-l);border-radius:12px;padding:10px 14px;margin-bottom:8px">
         <span style="font-size:11px;color:var(--brown);font-weight:700">LUCRO REAL DO PEDIDO</span>
         <div id="p-lucro-display" style="font-size:18px;font-weight:700;color:var(--green)">R$ 0,00</div>
+        <div id="p-lucro-conta" style="font-size:10px;color:var(--gray-d);margin-top:3px"></div>
       </div>
 
       <!-- MATERIAIS DO PEDIDO -->
@@ -6981,6 +6993,32 @@ function renderMateriaisPedido(materiais){
     adicionarMaterialPedido(nome,m.qtd,m.status||'pendente',m.id,m.tipo||'normal',m.size||'',m.itemId||'',(m.valor!=null&&m.valor!=='')?m.valor:'');
   });
 }
+
+/* ── qual é o pedido que ACABOU de ser salvo ──────────────────────
+   Pedido novo entra no COMEÇO da lista (unshift, linha ~2787).
+   Três trechos procuravam no FIM e pegavam o pedido mais ANTIGO:
+   o título mostrava o nome de outra cliente, o formulário passava a
+   apontar pra ela (salvar de novo sobrescrevia aquele pedido) e o
+   recibo do WhatsApp saía trocado. Guardar os ids de antes é o único
+   jeito que não depende da ordem da lista.        (Claude 12/09/2026) */
+window._idsPedidos = function(){
+  try{
+    return (typeof pedidos !== 'undefined' && Array.isArray(pedidos))
+      ? pedidos.map(function(p){ return p && p.id; })
+      : [];
+  }catch(e){ return []; }
+};
+window._pedidoRecemSalvo = function(idsAntes){
+  try{
+    if(typeof pedidos === 'undefined' || !Array.isArray(pedidos)) return null;
+    var vistos = {};
+    (idsAntes||[]).forEach(function(id){ if(id) vistos[id] = 1; });
+    for(var i = 0; i < pedidos.length; i++){
+      if(pedidos[i] && pedidos[i].id && !vistos[pedidos[i].id]) return pedidos[i];
+    }
+  }catch(e){}
+  return null;   // nada novo apareceu: melhor nada do que o pedido errado
+};
 </script>
 
 
@@ -8049,9 +8087,9 @@ function _ensureJsPDF(){
   return new Promise(function(resolve,reject){
     if(window.jspdf && window.jspdf.jsPDF){ resolve(window.jspdf.jsPDF); return; }
     var s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.src='lib/jspdf.umd.min.js';
     s.onload=function(){ if(window.jspdf&&window.jspdf.jsPDF) resolve(window.jspdf.jsPDF); else reject(new Error('Gerador de PDF não carregou')); };
-    s.onerror=function(){ reject(new Error('Falha ao baixar o gerador de PDF (precisa de internet)')); };
+    s.onerror=function(){ reject(new Error('Falha ao carregar o gerador de PDF (arquivo lib/jspdf.umd.min.js)')); };
     document.head.appendChild(s);
   });
 }
@@ -9365,7 +9403,7 @@ window._renderUltimaSync = function(){
        bloco de atualização (em Configurações) poder ler o número.
        Nada de escrever o padrão do selo entre aspas em comentário: o script
        leria o exemplo em vez do selo de verdade. Já aconteceu. */
-    var ver='v06/09-c36';
+    var ver='v12/09-c38';
     window.APP_VERSAO = ver;
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
@@ -10156,6 +10194,7 @@ function _exigeSalvo(fn){
     var args = arguments;
     if(typeof toast === 'function') toast('<span class=ic-salvar></span> Salvando o pedido primeiro...');
     var antes = (typeof pedidos !== 'undefined') ? pedidos.length : 0;
+    var idsAntes = _idsPedidos();
     try { salvarPedido(); } catch(e){}
     // salvarPedido fecha o modal; pega o pedido recém-criado e segue
     setTimeout(function(){
@@ -10163,7 +10202,8 @@ function _exigeSalvo(fn){
         if(typeof toast === 'function') toast('<span class=ic-aviso></span> Confira os dados do pedido.');
         return;
       }
-      var novo = pedidos[pedidos.length-1];
+      var novo = _pedidoRecemSalvo(idsAntes);
+      if(!novo) return;
       // repassa o resto dos parâmetros (o pedido de entrega da imagem ia junto)
       var resto = Array.prototype.slice.call(args, 1);
       fn.apply(null, [novo.id].concat(resto));
@@ -10623,13 +10663,14 @@ if(typeof _salvarOrig3 === 'function'){
     var nome = _gv('p-cliente');
     var end  = _lerEndereco();
     var antes = (typeof pedidos!=='undefined') ? pedidos.length : 0;
+    var idsAntes = _idsPedidos();
     var idEdit = _gv('p-id');
     var r = _salvarOrig3.apply(this, arguments);
     try {
       if(end) _guardarEnderecoCliente(nome, end);
       var alvo = idEdit
         ? pedidos.find(function(p){ return p.id === idEdit; })
-        : (pedidos.length > antes ? pedidos[pedidos.length-1] : null);
+        : (pedidos.length > antes ? _pedidoRecemSalvo(idsAntes) : null);
       if(alvo){
         alvo.endereco = end || null;
         alvo.parcelas = (String(_gv('p-pgto')).toLowerCase().indexOf('parcelad')>=0)
@@ -11428,19 +11469,43 @@ window.calcularGastoReal = function(){
   var disp = document.getElementById('p-gasto-real');
   if(disp) disp.textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
 
-  /* O campo de custo é "soma automática (pode ajustar)". Só mexemos nele
-     quando o valor de lá foi posto por nós — se a Laura digitou outro,
-     respeitamos. Sem isso, apagar o kit deixava o custo antigo preso e
-     o pedido era salvo com o gasto de um kit que não existe mais.      */
+  /* sem material na lista, "Gasto real: R$ 0,00" ao lado de um campo
+     preenchido só confunde — o texto passa a dizer o que está havendo */
+  var aviso = disp && disp.parentNode;
+  if(aviso){
+    var temLinha = lista && lista.querySelectorAll('.material-row').length > 0;
+    aviso.style.display = temLinha ? '' : 'none';
+    var solto = document.getElementById('p-custo-solto');
+    if(!solto && aviso.parentNode){
+      solto = document.createElement('div');
+      solto.id = 'p-custo-solto';
+      solto.style.cssText = 'font-size:10px;color:var(--gray-d);margin-top:3px';
+      solto.textContent = 'Nenhum material lançado — vale o valor que você digitou aqui.';
+      aviso.parentNode.appendChild(solto);
+    }
+    if(solto) solto.style.display = temLinha ? 'none' : '';
+  }
+
+  /* Havendo material na lista, o campo de gasto É a soma deles. Ponto.
+     Antes o app tentava adivinhar se o número de lá tinha sido digitado
+     pela Laura e, ao REABRIR um pedido salvo, sempre achava que sim —
+     então o gasto ficava congelado no valor antigo enquanto os materiais
+     mudavam. Foi assim que um pedido apareceu com gasto de R$ 19,28,
+     materiais somando R$ 299,61 e um lucro R$ 280 maior do que o real.
+     Sem material na lista, o campo é dela: é onde ela digita o gasto de
+     um pedido simples, como a vela.                (Claude 12/09/2026) */
   var custoInput = document.getElementById('p-custo');
   if(custoInput){
-    var atual = custoInput.value.trim();
-    var nosso = (window._custoAuto == null)
-      ? (atual === '' || parseFloat(atual) === 0)
-      : (atual === '' || Math.abs(parseFloat(atual) - window._custoAuto) < 0.005);
-    if(nosso){
-      custoInput.value = total > 0 ? total.toFixed(2) : '';
+    var temMaterial = lista && lista.querySelectorAll('.material-row').length > 0;
+    if(temMaterial && total > 0){
+      var novoVal = total.toFixed(2);
+      if(custoInput.value !== novoVal) custoInput.value = novoVal;
       window._custoAuto = total;
+    } else if(!temMaterial && window._custoAuto != null &&
+              Math.abs(parseFloat(custoInput.value) - window._custoAuto) < 0.005){
+      /* os materiais saíram todos: limpa o que tinha vindo deles */
+      custoInput.value = '';
+      window._custoAuto = null;
     }
   }
 
@@ -11731,6 +11796,7 @@ if(typeof _salvarOrig9 === 'function'){
   window.salvarPedido = function(){
     var eraNovo = !(document.getElementById('p-id')||{}).value;
     var antes = (typeof pedidos !== 'undefined') ? pedidos.length : 0;
+    var idsAntes = _idsPedidos();
 
     _salvando = true;
     var r;
@@ -11743,11 +11809,11 @@ if(typeof _salvarOrig9 === 'function'){
 
     // pedido novo: passa a valer como "em edição", pra imprimir e enviar
     if(eraNovo && agora > antes){
-      var novo = pedidos[pedidos.length-1];
+      var novo = _pedidoRecemSalvo(idsAntes);
       var campoId = document.getElementById('p-id');
       if(campoId && novo) campoId.value = novo.id;
       var titulo = document.getElementById('modal-pedido-title');
-      if(titulo) titulo.textContent = 'Pedido salvo — ' + (novo.cliente || '');
+      if(titulo && novo) titulo.textContent = 'Pedido salvo — ' + (novo.cliente || '');
     }
 
     // a barra de ações fica visível
@@ -14327,29 +14393,55 @@ function _taxaPct(){
   return p;
 }
 
-/* Igual ao catálogo: o preço dela fica inteiro e a taxa vai por fora.
-   R$ 200 com 4% viram R$ 208,33 — assim ela recebe os 200 limpos. */
+/* QUEM PAGA A TAXA (12/09/2026) — a Laura não repassa: quem paga é a
+   loja. Ficou como escolha porque um dia ela pode querer repassar.
+   O padrão é "loja" e a última escolha fica guardada.                */
+function _quemPagaTaxa(){
+  var s=_el('p-taxa-quem');
+  if(s && s.value) return s.value==='cliente' ? 'cliente' : 'loja';
+  try{ return localStorage.getItem('sp_taxa_quem')==='cliente' ? 'cliente' : 'loja'; }
+  catch(e){ return 'loja'; }
+}
+window._quemPagaTaxa = _quemPagaTaxa;
+
+/* Cliente paga: o preço dela fica inteiro e a taxa vai por fora —
+   R$ 200 com 4% viram R$ 208,33, e ela recebe os 200 limpos.
+   Loja paga: o total não muda, a maquininha desconta 4% dos R$ 200 e
+   esses R$ 8,00 saem do lucro.                                      */
 function _valorTaxa(){
   var pct=_taxaPct(); if(pct<=0) return 0;
   var sub=_subtotalPedido(); if(sub<=0) return 0;
-  return _r2(sub/(1-pct/100) - sub);
+  return (_quemPagaTaxa()==='cliente')
+    ? _r2(sub/(1-pct/100) - sub)
+    : _r2(sub*pct/100);
 }
 window._taxaCartaoPct   = _taxaPct;
 window._taxaCartaoValor = _valorTaxa;
 
+/* o que a loja gasta para entregar: sai do lucro, não do bolso da cliente */
+function _custoEntrega(){ return _r2(_num(_gv('p-entrega'))); }
+window._custoEntrega = _custoEntrega;
+
 function _pintarTaxa(){
-  var sub=_subtotalPedido(), pct=_taxaPct(), tx=_valorTaxa(), tot=_r2(sub+tx);
+  var sub=_subtotalPedido(), pct=_taxaPct(), tx=_valorTaxa();
+  var daLoja=(_quemPagaTaxa()==='loja');
+  var tot=_r2(sub + (daLoja ? 0 : tx));
   var info=_el('p-taxa-info');
   if(info){
-    if(pct>0 && sub>0){
+    if(pct>0 && sub>0 && daLoja){
+      info.innerHTML = 'A cliente paga <b style="color:var(--pink)">'+fmt(sub)+'</b>. '+
+        'A maquininha fica com '+String(pct).replace('.',',')+'% ('+fmt(tx)+
+        '), que sai do seu lucro.';
+    } else if(pct>0 && sub>0){
       info.innerHTML = 'Itens '+fmt(sub)+' + taxa '+String(pct).replace('.',',')+'% ('+fmt(tx)+
         ') = <b style="color:var(--pink)">'+fmt(tot)+'</b> a cobrar';
     } else {
       /* atalho para a última taxa usada nessa forma de pagamento —
          só entra se ela tocar, porque a taxa varia de venda pra venda */
       var ult=_taxaSalva(_gv('p-pgto'));
-      info.innerHTML = 'Digite a taxa desta venda. Ela entra por cima, '+
-        'para você receber o valor cheio dos itens.' +
+      info.innerHTML = (daLoja
+        ? 'Digite a taxa desta venda. Ela sai do seu lucro — o total da cliente não muda.'
+        : 'Digite a taxa desta venda. Ela entra por cima, para você receber o valor cheio dos itens.') +
         (ult!=null
           ? ' <button type="button" id="p-taxa-ultima" data-pct="'+ult+'" '+
             'style="background:var(--pink-l,#fce4ec);color:var(--pink,#e91e63);border:1px solid var(--pink,#e91e63);'+
@@ -14360,7 +14452,7 @@ function _pintarTaxa(){
   }
   var linha=_el('p-taxa-linha');
   if(linha){
-    if(pct>0 && tx>0){
+    if(pct>0 && tx>0 && !daLoja){
       linha.style.display='block';
       linha.innerHTML='itens '+fmt(sub)+' &nbsp;·&nbsp; taxa '+
         String(pct).replace('.',',')+'% '+fmt(tx);
@@ -14403,7 +14495,8 @@ document.addEventListener('click', function(e){
 
 /* refaz total, restante, parcelas e lucro com a taxa dentro */
 function _recalcTudo(){
-  var sub=_subtotalPedido(), tx=_valorTaxa(), tot=_r2(sub+tx);
+  var sub=_subtotalPedido(), tx=_valorTaxa();
+  var tot=_r2(sub + (_quemPagaTaxa()==='cliente' ? tx : 0));
   var temItens = document.querySelectorAll('#p-itens-lista .item-pedido-row').length>0;
 
   var hid=_el('p-valor'); if(hid) hid.value=tot;
@@ -14424,17 +14517,33 @@ function _recalcTudo(){
 window._aplicarTaxaCartao = function(){
   var inp=_el('p-taxa');
   if(inp){ inp.dataset.tocado='1'; _guardarTaxa(_gv('p-pgto'), _num(inp.value)); }
+  var s=_el('p-taxa-quem');
+  if(s){ try{ localStorage.setItem('sp_taxa_quem', s.value); }catch(e){} }
   _recalcTudo();
 };
 
-/* o lucro é sobre o que ela recebe: a taxa é repasse, não é ganho */
+/* O lucro é o que sobra DE VERDADE: o que a cliente paga, menos o
+   material, menos a entrega (que é por conta da loja) e menos a taxa
+   da maquininha quando quem paga é a loja.        (Claude 12/09/2026) */
 function _lucroComTaxa(){
   var el=_el('p-lucro-display'); if(!el) return;
-  var liquido=_subtotalPedido();
-  var custo=_num(_gv('p-custo'));
-  var lucro=_r2(liquido-custo);
+  var recebe=_subtotalPedido();
+  var material=_num(_gv('p-custo'));
+  var entrega=_custoEntrega();
+  var taxa=(_quemPagaTaxa()==='loja') ? _valorTaxa() : 0;
+  var lucro=_r2(recebe-material-entrega-taxa);
   el.textContent='R$ '+lucro.toFixed(2).replace('.',',');
   el.style.color = lucro>=0 ? 'var(--green)' : '#EF4444';
+
+  /* a conta escrita por extenso: ela pediu para poder conferir */
+  var cta=_el('p-lucro-conta');
+  if(cta){
+    var partes=[fmt(recebe)+' recebidos'];
+    if(material>0) partes.push('− '+fmt(material)+' de material');
+    if(entrega>0)  partes.push('− '+fmt(entrega)+' de entrega');
+    if(taxa>0)     partes.push('− '+fmt(taxa)+' da maquininha');
+    cta.textContent = partes.length>1 ? partes.join('  ') : '';
+  }
 }
 
 /* ── engancha nos recálculos que já existiam ── */
@@ -14456,14 +14565,15 @@ document.addEventListener('input', function(e){
 });
 
 /* ── a taxa vira uma linha no pedido salvo ──
-   Assim o total, o recibo, o financeiro e o WhatsApp já saem certos,
-   e a cliente enxerga de onde veio o acréscimo. */
+   Só quando é a CLIENTE quem paga. Sendo da loja, a taxa não é
+   cobrança: não entra no total, não vai no recibo e não aparece na
+   comanda — ela some do lucro, e só.              (Claude 12/09/2026) */
 var _coletarOrig = window.coletarItensPedido;
 if(typeof _coletarOrig==='function'){
   window.coletarItensPedido = function(){
     var itens=_coletarOrig.apply(this, arguments) || [];
     itens = itens.filter(function(it){ return !(it && it.taxaCartao); });
-    var pct=_taxaPct(), tx=_valorTaxa();
+    var pct=_taxaPct(), tx=(_quemPagaTaxa()==='cliente') ? _valorTaxa() : 0;
     if(itens.length && pct>0 && tx>0){
       itens.push({ nome:'Taxa do cartão ('+String(pct).replace('.',',')+'%)',
                    qtd:1, un:'un', preco:tx, taxaCartao:true, pct:pct });
@@ -14496,12 +14606,17 @@ if(typeof _popularOrig==='function'){
 }
 
 /* sem itens (valor digitado à mão) a taxa não vira linha —
-   então carimba no pedido salvo depois que ele foi gravado */
+   então carimba no pedido salvo depois que ele foi gravado.
+   Aqui também fica o CUSTO do pedido: material + entrega + taxa da
+   loja. É esse campo que os relatórios usam como custo, então gravar
+   a conta inteira aqui é o que faz o lucro do mês fechar certo. */
 var _salvarTaxaOrig = window.salvarPedido;
 if(typeof _salvarTaxaOrig==='function'){
   window.salvarPedido = function(){
     var temItens=document.querySelectorAll('#p-itens-lista .item-pedido-row').length>0;
     var pct=_taxaPct(), tx=_valorTaxa(), sub=_subtotalPedido();
+    var quem=_quemPagaTaxa();
+    var material=_r2(_num(_gv('p-custo'))), entrega=_custoEntrega();
     var idEdit=_gv('p-id');
     var antes={}; try{ (pedidos||[]).forEach(function(p){ if(p) antes[p.id]=1; }); }catch(e){}
 
@@ -14514,10 +14629,46 @@ if(typeof _salvarTaxaOrig==='function'){
       if(alvo){
         alvo.taxaCartaoPct = pct||0;
         alvo.taxaCartaoValor = tx||0;
-        if(!temItens && tx>0) alvo.valor=_r2(sub+tx);
+        alvo.taxaCartaoQuem = quem;
+        alvo.entrega = entrega||0;
+        alvo.custoMaterial = material||0;
+        alvo.custo = _r2(material + entrega + (quem==='loja' ? (tx||0) : 0));
+        if(!temItens && tx>0 && quem==='cliente') alvo.valor=_r2(sub+tx);
         if(typeof DB!=='undefined') DB.set('pedidos', pedidos);
       }
     }catch(e){ console.warn('[taxa] não carimbou:', e && e.message); }
+    return r;
+  };
+}
+
+/* ao reabrir um pedido salvo: devolve a entrega e quem pagou a taxa */
+var _editarTaxaOrig = window.editarPedido;
+if(typeof _editarTaxaOrig==='function'){
+  window.editarPedido = function(id){
+    var r=_editarTaxaOrig.apply(this, arguments);
+    try{
+      var p=(pedidos||[]).find(function(x){ return x && x.id===id; });
+      var ent=_el('p-entrega'), sq=_el('p-taxa-quem');
+      if(ent) ent.value = (p && p.entrega>0) ? p.entrega : '';
+      if(sq)  sq.value  = (p && p.taxaCartaoQuem==='cliente') ? 'cliente' : 'loja';
+      setTimeout(_recalcTudo, 120);
+    }catch(e){}
+    return r;
+  };
+}
+
+/* pedido novo: entrega em branco e a última escolha de quem paga */
+var _resetTaxaOrig = window.resetModal;
+if(typeof _resetTaxaOrig==='function'){
+  window.resetModal = function(id){
+    var r=_resetTaxaOrig.apply(this, arguments);
+    if(id==='modal-pedido'){
+      var ent=_el('p-entrega'); if(ent) ent.value='';
+      var sq=_el('p-taxa-quem');
+      if(sq){ try{ sq.value = localStorage.getItem('sp_taxa_quem')==='cliente' ? 'cliente' : 'loja'; }
+              catch(e){ sq.value='loja'; } }
+      var cta=_el('p-lucro-conta'); if(cta) cta.textContent='';
+    }
     return r;
   };
 }
@@ -14526,8 +14677,13 @@ if(typeof _salvarTaxaOrig==='function'){
 /* Ficam fora do catálogo de propósito: assim não entram no catálogo
    que vai pra cliente, não contam no total de produtos e não têm
    como escorregar pro estoque ou pra lista de compras. */
+/* 12/09/2026 — a entrega saiu da lista de escolha: quem paga é a
+   loja, então ela não é mais item cobrado da cliente, e sim o campo
+   "Entrega (R$)" do pedido, que sai do lucro. O nome fica aqui para
+   as travas continuarem reconhecendo: serviço nunca vira material,
+   nunca entra no estoque e nunca aparece na lista de compras.      */
 var SERVICOS = [
-  { id:'sv_taxa-entrega', nome:'Taxa de entrega', cat:'Serviço' }
+  { id:'sv_taxa-entrega', nome:'Taxa de entrega', cat:'Serviço', naLista:false }
 ];
 window._servicos = function(){ return SERVICOS.slice(); };
 function _ehServicoNome(nome){
@@ -14543,10 +14699,12 @@ if(typeof _popSelOrig==='function'){
     var r=_popSelOrig.apply(this, arguments);
     var sel=_el('p-catalogo-sel'); if(!sel) return r;
     if(sel.querySelector('optgroup[data-servicos]')) return r;
+    var visiveis=SERVICOS.filter(function(s){ return s.naLista !== false; });
+    if(!visiveis.length) return r;
     var g=document.createElement('optgroup');
     g.label='Serviços (não entram no estoque)';
     g.setAttribute('data-servicos','1');
-    g.innerHTML=SERVICOS.map(function(s){
+    g.innerHTML=visiveis.map(function(s){
       return '<option value="'+s.id+'">'+s.nome+'</option>';
     }).join('');
     var prim=sel.querySelector('option');
@@ -15097,6 +15255,358 @@ if(typeof _confInst === 'function'){
 
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(_pintarBotao, 1800); });
 else setTimeout(_pintarBotao, 1800);
+
+})();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   AJUSTES 12/09/2026 — do que a Laura mandou por vídeo e áudio
+     F · o material do kit continua colado no item depois de salvar
+     G · escolher no catálogo virou busca: entra só o que ela toca
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+function _el(id){ return document.getElementById(id); }
+function _nn(s){
+  return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .toLowerCase().replace(/\s+/g,' ').trim();
+}
+
+/* ══ F · O VÍNCULO KIT → MATERIAL SOBREVIVE AO SALVAR ═════════════
+   O material que vem de um kit ficava marcado com o id do ELEMENTO
+   da linha do item — uma marca que só existe enquanto o modal está
+   aberto. Salvou e reabriu, a marca sumia: excluir o item deixava os
+   materiais dele para trás, inflando o custo de um kit que não está
+   mais no pedido. Agora o que se grava é a POSIÇÃO do item na lista,
+   que atravessa o salvar.                                          */
+
+function _linhasItem(){
+  return [].slice.call(document.querySelectorAll('#p-itens-lista .item-pedido-row'));
+}
+function _linhasMaterial(){
+  return [].slice.call(document.querySelectorAll('#p-materiais-lista .material-row'));
+}
+function _posicaoDoItem(domId){
+  var itens=_linhasItem();
+  for(var i=0;i<itens.length;i++) if(itens[i].id===domId) return i;
+  return -1;
+}
+
+var _colMatOrig = window.coletarMateriaisPedido;
+if(typeof _colMatOrig === 'function'){
+  window.coletarMateriaisPedido = function(){
+    var mats = _colMatOrig.apply(this, arguments) || [];
+    try{
+      var porId = {};
+      _linhasMaterial().forEach(function(r){ if(r.dataset.matId) porId[r.dataset.matId]=r; });
+      mats.forEach(function(m){
+        var r = porId[m.id]; if(!r) return;
+        var oi = r.dataset.origemItem; if(!oi) return;
+        var pos = _posicaoDoItem(oi);
+        if(pos >= 0){
+          m.doItem = pos;
+          var qb = parseFloat(r.dataset.qtdBase);
+          if(qb > 0) m.qtdBase = qb;
+        }
+      });
+    }catch(e){ console.warn('[kit] não gravou o vínculo:', e && e.message); }
+    return mats;
+  };
+}
+
+var _renMatOrig = window.renderMateriaisPedido;
+if(typeof _renMatOrig === 'function'){
+  window.renderMateriaisPedido = function(materiais){
+    var r = _renMatOrig.apply(this, arguments);
+    try{
+      var itens = _linhasItem();
+      var porId = {};
+      _linhasMaterial().forEach(function(x){ if(x.dataset.matId) porId[x.dataset.matId]=x; });
+      (materiais||[]).forEach(function(m){
+        if(m.doItem == null) return;
+        var it = itens[m.doItem]; if(!it || !it.id) return;
+        var row = porId[m.id]; if(!row) return;
+        row.dataset.origemItem = it.id;
+        if(m.qtdBase > 0) row.dataset.qtdBase = m.qtdBase;
+        var nomeEl = row.querySelector('.mat-nome') || row.querySelector('.mat-sel');
+        if(nomeEl) nomeEl.title = 'Veio do kit. Sai junto se o item for excluído.';
+      });
+    }catch(e){ console.warn('[kit] não refez o vínculo:', e && e.message); }
+    return r;
+  };
+}
+
+/* ══ G · CATÁLOGO: BUSCA NO LUGAR DA LISTA SUSPENSA ═══════════════
+   Eram 350 produtos numa lista suspensa comum. O que ela digitava não
+   aparecia em lugar nenhum ("fica no escuro") e cada tecla pulava para
+   outro produto, disparando o onchange: entravam no pedido caixas que
+   ela nunca escolheu. A lista continua no HTML, escondida, porque meia
+   dúzia de funções ainda falam com ela — o que muda é a porta de
+   entrada: um campo de busca que só adiciona no toque.             */
+
+var _cxAberta = false;
+
+function _opcoesDoSelect(){
+  var sel = _el('p-catalogo-sel'); if(!sel) return [];
+  return [].slice.call(sel.querySelectorAll('option'))
+    .filter(function(o){ return o.value; })
+    .map(function(o){
+      var grupo = o.parentNode && o.parentNode.tagName === 'OPTGROUP'
+        ? (o.parentNode.label||'') : '';
+      return { id:o.value, texto:o.textContent||'', grupo:grupo, chave:_nn(o.textContent) };
+    });
+}
+
+/* casa por pedaços: "caixa crist" acha "Caixa cristal · R$ 9,00" */
+function _filtrar(termo){
+  var t = _nn(termo);
+  var todas = _opcoesDoSelect();
+  if(!t) return todas.slice(0, 30);
+  var termos = t.split(' ').filter(Boolean);
+  return todas.filter(function(o){
+    return termos.every(function(p){ return o.chave.indexOf(p) >= 0; });
+  }).slice(0, 40);
+}
+
+function _fecharLista(){
+  var cx = _el('p-cat-lista');
+  if(cx){ cx.style.display='none'; cx.innerHTML=''; }
+  _cxAberta = false;
+}
+
+function _escolher(id){
+  if(!id) return;
+  _fecharLista();
+  var inp = _el('p-cat-busca'); if(inp) inp.value='';
+  if(typeof puxarProdutoCatalogo === 'function') puxarProdutoCatalogo(id);
+}
+
+function _desenhar(termo){
+  var cx = _el('p-cat-lista'); if(!cx) return;
+  var achados = _filtrar(termo);
+  if(!achados.length){
+    cx.innerHTML = '<div style="padding:10px 12px;color:var(--gray-d)">Nada com esse nome. '+
+                   'Tente uma palavra só, como "caixa".</div>';
+    cx.style.display='block'; _cxAberta = true;
+    return;
+  }
+  cx.innerHTML = achados.map(function(o, i){
+    var etiqueta = o.grupo
+      ? '<span style="font-size:10px;color:var(--gray-d);display:block">'+o.grupo+'</span>' : '';
+    return '<div class="p-cat-op" data-id="'+o.id+'" data-i="'+i+'" '+
+           'style="padding:9px 12px;cursor:pointer;border-bottom:1px solid #f2f2f2">'+
+           etiqueta + o.texto.replace(/</g,'&lt;') + '</div>';
+  }).join('');
+  cx.style.display='block'; _cxAberta = true;
+}
+
+function _montar(){
+  var sel = _el('p-catalogo-sel'); if(!sel) return;
+  if(_el('p-cat-busca')) return;
+
+  var wrap = document.createElement('div');
+  wrap.style.position = 'relative';
+
+  var inp = document.createElement('input');
+  inp.type = 'text'; inp.id = 'p-cat-busca'; inp.className = 'form-input';
+  inp.setAttribute('placeholder', 'Digite o nome e toque no produto');
+  inp.setAttribute('autocomplete', 'off');
+
+  var cx = document.createElement('div');
+  cx.id = 'p-cat-lista';
+  cx.style.cssText = 'display:none;position:absolute;left:0;right:0;top:100%;z-index:60;'+
+    'background:#fff;border:1.5px solid var(--pink,#e91e63);border-radius:12px;'+
+    'box-shadow:0 8px 22px rgba(0,0,0,.18);max-height:230px;overflow-y:auto;'+
+    '-webkit-overflow-scrolling:touch;font-size:13px;margin-top:4px';
+
+  sel.style.display = 'none';
+  sel.parentNode.insertBefore(wrap, sel);
+  wrap.appendChild(inp);
+  wrap.appendChild(cx);
+
+  inp.addEventListener('input', function(){ _desenhar(inp.value); });
+  inp.addEventListener('focus', function(){ _desenhar(inp.value); });
+
+  /* no celular o clique não chega: o blur do campo fecha a lista antes.
+     pointerdown com preventDefault é o que funciona nos dois. */
+  cx.addEventListener('pointerdown', function(e){
+    var op = e.target && e.target.closest ? e.target.closest('.p-cat-op') : null;
+    if(!op) return;
+    e.preventDefault();
+    _escolher(op.dataset.id);
+  });
+
+  /* Enter escolhe o primeiro da lista; Esc fecha sem escolher nada */
+  inp.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){ _fecharLista(); return; }
+    if(e.key !== 'Enter') return;
+    e.preventDefault();
+    var primeiro = cx.querySelector('.p-cat-op');
+    if(primeiro) _escolher(primeiro.dataset.id);
+  });
+
+  document.addEventListener('pointerdown', function(e){
+    if(!_cxAberta) return;
+    if(e.target === inp) return;
+    if(cx.contains(e.target)) return;
+    _fecharLista();
+  });
+}
+
+/* pedido novo ou reaberto: o campo de busca começa limpo */
+var _resetBuscaOrig = window.resetModal;
+if(typeof _resetBuscaOrig === 'function'){
+  window.resetModal = function(id){
+    var r = _resetBuscaOrig.apply(this, arguments);
+    if(id === 'modal-pedido'){
+      var i = _el('p-cat-busca'); if(i) i.value='';
+      _fecharLista();
+    }
+    return r;
+  };
+}
+
+if(document.readyState === 'loading')
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(_montar, 900); });
+else setTimeout(_montar, 900);
+
+})();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   H · FAXINA DE 12/09/2026 — arruma os pedidos que já estavam salvos
+   Três coisas ficaram tortas nos pedidos antigos:
+     · o gasto gravado não acompanhava os materiais (um pedido tinha
+       R$ 19,28 de gasto com R$ 299,61 de material embaixo);
+     · a entrega, que quem paga é a loja, estava misturada com os
+       materiais, então ia parar na lista de compras e no estoque;
+     · não havia registro de quem pagou a taxa do cartão.
+   Roda uma vez por aparelho, guarda uma cópia do antes e só toca no
+   pedido que está de fato divergente.
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+var MARCA = 'sp_fix_1209';
+
+function _nn(s){
+  return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .toLowerCase().replace(/\s+/g,' ').trim();
+}
+function _r2(n){ return Math.round((Number(n)||0)*100)/100; }
+
+/* entrega vem escrita de vários jeitos; casa no COMEÇO da palavra
+   para não pegar "entregador de balões" nem coisa parecida */
+function _ehEntrega(nome){
+  var n = _nn(nome);
+  if(!n) return false;
+  return n === 'entrega' || n === 'frete' ||
+         n.indexOf('taxa de entrega') === 0 ||
+         n.indexOf('taxa entrega') === 0 ||
+         n.indexOf('taxa de frete') === 0;
+}
+
+function corrigirPedidos1209(forcado){
+  try{
+    if(!forcado){ try{ if(localStorage.getItem(MARCA)) return 0; }catch(e){} }
+    if(typeof pedidos === 'undefined' || !Array.isArray(pedidos) || !pedidos.length){
+      try{ localStorage.setItem(MARCA, '1'); }catch(e){}
+      return 0;
+    }
+
+    /* a cópia do antes, para o caso de algo sair errado */
+    try{
+      if(!localStorage.getItem('sp_backup_pedidos_1209')){
+        localStorage.setItem('sp_backup_pedidos_1209', JSON.stringify(pedidos));
+      }
+    }catch(e){ console.warn('[faxina] sem espaço para o backup:', e && e.message); }
+
+    var agora = Date.now(), mexidos = 0, relatorio = [];
+
+    pedidos.forEach(function(p){
+      if(!p) return;
+      var mats = Array.isArray(p.materiais) ? p.materiais : [];
+      var mudou = false;
+
+      /* 1 · a entrega sai dos materiais e vira custo próprio.
+             Parte do que já estiver gravado no campo: sem isso, a
+             segunda passada não acharia entrega nenhuma na lista e
+             apagaria o custo que a primeira tinha acabado de mover. */
+      var entrega = Number(p.entrega) || 0;
+      var limpos = [];
+      mats.forEach(function(m){
+        if(m && _ehEntrega(m.nome)){
+          entrega += (Number(m.qtd)||1) * (Number(m.valor)||0);
+          mudou = true;
+        } else limpos.push(m);
+      });
+      entrega = _r2(entrega);
+
+      /* 2 · o gasto com material é a soma do que sobrou */
+      var material = _r2(limpos.reduce(function(s,m){
+        return s + (Number(m && m.qtd)||0) * (Number(m && m.valor)||0);
+      }, 0));
+
+      /* 3 · quem pagou a taxa: os antigos foram cobrados da cliente,
+             porque o total gravado já inclui o acréscimo */
+      var quem = p.taxaCartaoQuem || (p.taxaCartaoValor > 0 ? 'cliente' : 'loja');
+      var taxaLoja = (quem === 'loja') ? (Number(p.taxaCartaoValor)||0) : 0;
+
+      /* sem material nenhum, o gasto digitado à mão continua valendo */
+      var custoNovo = (limpos.length || entrega > 0)
+        ? _r2(material + entrega + taxaLoja)
+        : _r2((Number(p.custo)||0) + taxaLoja);
+
+      var custoVelho = _r2(Number(p.custo)||0);
+      if(Math.abs(custoNovo - custoVelho) >= 0.01) mudou = true;
+      if(p.entrega == null && entrega > 0) mudou = true;
+      if(!p.taxaCartaoQuem) mudou = true;
+
+      if(!mudou) return;
+
+      relatorio.push({
+        cliente: p.cliente||'', produto: p.produto||'',
+        de: custoVelho, para: custoNovo, entrega: entrega
+      });
+
+      p.materiais    = limpos;
+      p.entrega      = entrega;
+      p.custoMaterial= (limpos.length || entrega > 0) ? material : _r2(Number(p.custo)||0);
+      p.custo        = custoNovo;
+      p.taxaCartaoQuem = quem;
+      p.updatedAt    = agora;   /* sem isto a nuvem devolve o estado velho */
+      mexidos++;
+    });
+
+    if(mexidos){
+      if(typeof DB !== 'undefined') DB.set('pedidos', pedidos);
+      if(typeof save === 'function') save();
+      try{ localStorage.setItem('sp_fix_1209_relatorio', JSON.stringify(relatorio)); }catch(e){}
+      console.log('[faxina 12/09] pedidos ajustados:', mexidos, relatorio);
+      if(typeof toast === 'function'){
+        setTimeout(function(){
+          toast('<span class=ic-ok></span> ' + mexidos +
+                ' pedido(s) tiveram o gasto e o lucro recalculados.');
+        }, 2500);
+      }
+    }
+    try{ localStorage.setItem(MARCA, '1'); }catch(e){}
+    return mexidos;
+  }catch(e){
+    console.warn('[faxina 12/09] não rodou:', e && e.message);
+    return 0;
+  }
+}
+window._corrigirPedidos1209 = corrigirPedidos1209;
+window._ehEntregaNome = _ehEntrega;
+
+/* espera o app carregar os dados antes de mexer neles */
+if(document.readyState === 'loading')
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(corrigirPedidos1209, 2200); });
+else setTimeout(corrigirPedidos1209, 2200);
 
 })();
 </script>
