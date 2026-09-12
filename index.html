@@ -9403,7 +9403,7 @@ window._renderUltimaSync = function(){
        bloco de atualização (em Configurações) poder ler o número.
        Nada de escrever o padrão do selo entre aspas em comentário: o script
        leria o exemplo em vez do selo de verdade. Já aconteceu. */
-    var ver='v12/09-c38';
+    var ver='v12/09-c39';
     window.APP_VERSAO = ver;
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
@@ -15607,6 +15607,151 @@ window._ehEntregaNome = _ehEntrega;
 if(document.readyState === 'loading')
   document.addEventListener('DOMContentLoaded', function(){ setTimeout(corrigirPedidos1209, 2200); });
 else setTimeout(corrigirPedidos1209, 2200);
+
+})();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   I · A RECEITA QUE O APP APRENDE          (12/09/2026)
+   A Laura leva de 5 a 10 minutos por pedido, e o que mais come tempo
+   são os materiais: os 350 produtos que ela importou têm nome e preço,
+   mas nenhum tem ficha. Então ela digita os mesmos materiais do mesmo
+   kit toda vez que vende ele de novo.
+   Cadastrar 350 fichas de uma vez ninguém faz. Aqui o caminho é outro:
+   na primeira venda de cada produto, ao salvar, o app mostra o que ela
+   lançou e pergunta se aquilo é a receita. Dizendo que sim, a próxima
+   venda vem pronta num toque. O catálogo se preenche sozinho, no ritmo
+   do que ela realmente vende.
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+function _el(id){ return document.getElementById(id); }
+function _nm(s){
+  return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .toLowerCase().replace(/\s+/g,' ').trim();
+}
+function _r2(n){ return Math.round((Number(n)||0)*100)/100; }
+function _r3(n){ return Math.round((Number(n)||0)*1000)/1000; }
+
+function _produtoPorNome(nome){
+  var n=_nm(nome); if(!n) return null;
+  try{
+    return (catalogo||[]).filter(function(p){ return p && _nm(p.nome)===n; })[0] || null;
+  }catch(e){ return null; }
+}
+
+/* Lê o que está na tela ANTES de salvar — depois o modal fecha e some.
+   Devolve null quando não dá para saber de quem é a receita: pedido com
+   vários produtos e materiais soltos é ambíguo, e chutar aqui encheria
+   o catálogo de receita errada.                                      */
+function _lerProposta(){
+  try{
+    if(typeof coletarItensPedido!=='function' || typeof coletarMateriaisPedido!=='function') return null;
+
+    var itens=(coletarItensPedido()||[]).filter(function(it){
+      if(!it || it.taxaCartao) return false;
+      if(typeof _ehServicoNome==='function' && _ehServicoNome(it.nome)) return false;
+      if(typeof window._ehEntregaNome==='function' && window._ehEntregaNome(it.nome)) return false;
+      return true;
+    });
+    if(!itens.length) return null;
+
+    var mats=(coletarMateriaisPedido()||[]).filter(function(m){
+      if(!m || !m.nome || !(Number(m.qtd)>0)) return false;
+      if(typeof window._ehEntregaNome==='function' && window._ehEntregaNome(m.nome)) return false;
+      return true;
+    });
+    if(!mats.length) return null;
+
+    /* de qual item é essa receita? */
+    var alvo=-1;
+    if(itens.length===1){
+      alvo=0;
+    } else {
+      var comVinculo=mats.filter(function(m){ return m.doItem!=null; });
+      if(comVinculo.length!==mats.length) return null;
+      var primeiro=comVinculo[0].doItem;
+      if(!comVinculo.every(function(m){ return m.doItem===primeiro; })) return null;
+      alvo=primeiro;
+    }
+    var item=itens[alvo]; if(!item) return null;
+
+    var prod=_produtoPorNome(item.nome);
+    if(!prod) return null;                                   // não está no catálogo
+    if(prod.materiais && prod.materiais.length) return null; // já tem receita
+    if(prod.semReceita) return null;                         // ela já disse que não
+
+    /* a receita é POR UNIDADE: 7 xícaras num pedido de 7 kits = 1 por kit */
+    var qtdItem=Number(item.qtd)||1; if(qtdItem<=0) qtdItem=1;
+    var receita=mats.map(function(m){
+      return { nome:m.nome, qtd:_r3((Number(m.qtd)||0)/qtdItem),
+               valor:_r2(m.valor), tipo:m.tipo||'normal', size:m.size||'' };
+    }).filter(function(m){ return m.qtd>0; });
+    if(!receita.length) return null;
+
+    return { id:prod.id, nome:prod.nome, receita:receita,
+             matCusto:_r2(receita.reduce(function(s,m){ return s+m.qtd*m.valor; },0)) };
+  }catch(e){ console.warn('[receita] não consegui ler:', e && e.message); return null; }
+}
+
+function _perguntar(p){
+  try{
+    var linhas=p.receita.slice(0,8).map(function(m){
+      var q=String(m.qtd).replace('.',',');
+      return '   • ' + q + ' × ' + m.nome;
+    }).join('\n');
+    if(p.receita.length>8) linhas += '\n   • (e mais ' + (p.receita.length-8) + ')';
+
+    var texto = 'Guardar estes materiais como a receita de "' + p.nome + '"?\n\n' +
+                linhas + '\n\n' +
+                'Da próxima vez que você puxar "' + p.nome + '" do catálogo, ' +
+                'eles já vêm preenchidos e você não digita de novo.';
+
+    var sim = window.confirm(texto);
+    var prod=(catalogo||[]).filter(function(x){ return x && x.id===p.id; })[0];
+    if(!prod) return;
+
+    if(sim){
+      prod.materiais = p.receita;
+      prod.matCusto  = p.matCusto;
+      prod.updatedAt = Date.now();
+      if(typeof DB!=='undefined') DB.set('catalogo', catalogo);
+      if(typeof save==='function') save();
+      if(typeof renderCatalogo==='function'){ try{ renderCatalogo(); }catch(e){} }
+      if(typeof toast==='function'){
+        toast('<span class=ic-ok></span> Receita de "' + p.nome + '" guardada. ' +
+              'O próximo pedido vem pronto.');
+      }
+    } else {
+      /* não insiste: quem disse não uma vez não quer ser perguntado sempre */
+      prod.semReceita = true;
+      prod.updatedAt = Date.now();
+      if(typeof DB!=='undefined') DB.set('catalogo', catalogo);
+      if(typeof save==='function') save();
+    }
+  }catch(e){ console.warn('[receita] não guardei:', e && e.message); }
+}
+window._propostaDeReceita = _lerProposta;
+window._guardarReceita = _perguntar;
+
+var _salvarOrig = window.salvarPedido;
+if(typeof _salvarOrig==='function'){
+  window.salvarPedido = function(){
+    var proposta=_lerProposta();
+    var antes=(typeof pedidos!=='undefined' && pedidos) ? pedidos.length : 0;
+    var editando=!!(_el('p-id')||{}).value;
+
+    var r=_salvarOrig.apply(this, arguments);
+
+    /* só pergunta se o pedido foi mesmo salvo — validação reprovada
+       fecha nada e não é hora de perguntar coisa nenhuma */
+    var salvou = editando || ((typeof pedidos!=='undefined' && pedidos) ? pedidos.length>antes : false);
+    if(proposta && salvou) setTimeout(function(){ _perguntar(proposta); }, 700);
+    return r;
+  };
+}
 
 })();
 </script>
