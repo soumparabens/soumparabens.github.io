@@ -1607,9 +1607,9 @@ function _mudarFiltroMes(val){
         <div style="font-size:10px;color:var(--gray-d);margin-top:3px">Soma de cada material abaixo — quantidade × preço da unidade. Gasto real: <b id="p-gasto-real" style="color:var(--cyan-d)">R$ 0,00</b></div>
       </div>
       <div class="field-group" style="margin-bottom:8px">
-        <label class="form-label">ENTREGA (R$) — QUEM PAGA É A LOJA</label>
+        <label class="form-label">CUSTO DA ENTREGA — UBER, MOTOBOY (R$)</label>
         <input type="number" id="p-entrega" class="form-input" placeholder="0,00" step="0.01" min="0" oninput="calcularLucro()">
-        <div style="font-size:10px;color:var(--gray-d);margin-top:3px">O que <b>você</b> gasta para entregar este pedido. Sai do seu lucro e não é cobrado da cliente.</div>
+        <div style="font-size:10px;color:var(--gray-d);margin-top:3px">O que <b>você paga</b> ao motorista. Sai do seu lucro e a cliente não vê. O que você <b>cobra</b> da cliente entra como item: puxe "Taxa de entrega" em Puxar do catálogo.</div>
       </div>
       <div style="background:var(--pink-l);border-radius:12px;padding:10px 14px;margin-bottom:8px">
         <span style="font-size:11px;color:var(--brown);font-weight:700">LUCRO REAL DO PEDIDO</span>
@@ -9419,7 +9419,7 @@ window._renderUltimaSync = function(){
        bloco de atualização (em Configurações) poder ler o número.
        Nada de escrever o padrão do selo entre aspas em comentário: o script
        leria o exemplo em vez do selo de verdade. Já aconteceu. */
-    var ver='v12/09-c40';
+    var ver='v13/09-c41';
     window.APP_VERSAO = ver;
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
@@ -14625,7 +14625,7 @@ function _lucroComTaxa(){
   if(cta){
     var partes=[fmt(recebe)+' recebidos'];
     if(material>0) partes.push('− '+fmt(material)+' de material');
-    if(entrega>0)  partes.push('− '+fmt(entrega)+' de entrega');
+    if(entrega>0)  partes.push('− '+fmt(entrega)+' de uber');
     if(taxa>0)     partes.push('− '+fmt(taxa)+' da maquininha');
     cta.textContent = partes.length>1 ? partes.join('  ') : '';
   }
@@ -14762,13 +14762,13 @@ if(typeof _resetTaxaOrig==='function'){
 /* Ficam fora do catálogo de propósito: assim não entram no catálogo
    que vai pra cliente, não contam no total de produtos e não têm
    como escorregar pro estoque ou pra lista de compras. */
-/* 12/09/2026 — a entrega saiu da lista de escolha: quem paga é a
-   loja, então ela não é mais item cobrado da cliente, e sim o campo
-   "Entrega (R$)" do pedido, que sai do lucro. O nome fica aqui para
-   as travas continuarem reconhecendo: serviço nunca vira material,
-   nunca entra no estoque e nunca aparece na lista de compras.      */
+/* 13/09/2026 — a entrega É COBRADA DA CLIENTE (em 12/09 entendemos o
+   contrário e ela tinha saído desta lista). Como na planilha da Laura,
+   são duas coisas: a taxa cobrada é item do pedido, puxado daqui, e o
+   que ela paga ao motorista vai no campo "Custo da entrega" e sai do
+   lucro. Serviço nunca vira material, estoque nem lista de compras. */
 var SERVICOS = [
-  { id:'sv_taxa-entrega', nome:'Taxa de entrega', cat:'Serviço', naLista:false }
+  { id:'sv_taxa-entrega', nome:'Taxa de entrega', cat:'Serviço' }
 ];
 window._servicos = function(){ return SERVICOS.slice(); };
 function _ehServicoNome(nome){
