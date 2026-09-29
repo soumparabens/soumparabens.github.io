@@ -2067,8 +2067,11 @@ function _mudarFiltroMes(val){
 <!-- <span class=ic-cadeado></span> Tela de bloqueio (senha de abertura) -->
 <div id="app-lock" style="display:none;position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#FEF5E7 0%,#FAF2E4 55%,#F5E9D6 100%);flex-direction:column;align-items:center;justify-content:center;padding:20px 22px calc(20px + var(--safe-bottom));box-sizing:border-box">
   <div style="width:78vw;max-width:300px;margin:0 auto 26px;text-align:center;"><div style="width:100%;max-width:250px;aspect-ratio:440/452;margin:0 auto;background:var(--logo) center/contain no-repeat;filter:drop-shadow(0 5px 14px rgba(126,99,78,.16))"></div></div>
-  <div style="font-size:14px;color:#5F4A39;font-weight:700;margin-bottom:12px;text-align:center;font-family:var(--font-main);text-shadow:0 1px 3px rgba(255,255,255,.6)">Digite sua senha para entrar</div>
-  <input id="app-lock-input" type="password" inputmode="numeric" autocomplete="off" placeholder="senha" style="width:240px;max-width:80vw;box-sizing:border-box;text-align:center;font-size:20px;letter-spacing:4px;padding:13px;border:1.5px solid #7E634E;border-radius:12px;outline:none;background:#fff;font-family:var(--font-main)" onkeydown="if(event.key==='Enter')appLockTryUnlock()">
+  <div style="font-size:14px;color:#5F4A39;font-weight:700;margin-bottom:12px;text-align:center;font-family:var(--font-main);text-shadow:0 1px 3px rgba(255,255,255,.6)">Entre com seu e-mail e senha</div>
+  <!-- 29/09/2026: o e-mail virou campo. Antes era fixo no código (uma conta só
+       para todo mundo). Fica guardado no aparelho, então ela digita uma vez. -->
+  <input id="app-lock-email" type="email" inputmode="email" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="seu e-mail" style="width:240px;max-width:80vw;box-sizing:border-box;text-align:center;font-size:15px;padding:12px;border:1.5px solid #7E634E;border-radius:12px;outline:none;background:#fff;font-family:var(--font-main);margin-bottom:8px" onkeydown="if(event.key==='Enter'){var s=document.getElementById('app-lock-input'); if(s) s.focus();}">
+  <input id="app-lock-input" type="password" autocomplete="current-password" placeholder="senha" style="width:240px;max-width:80vw;box-sizing:border-box;text-align:center;font-size:18px;letter-spacing:2px;padding:13px;border:1.5px solid #7E634E;border-radius:12px;outline:none;background:#fff;font-family:var(--font-main)" onkeydown="if(event.key==='Enter')appLockTryUnlock()">
   <div id="app-lock-err" style="height:16px;margin-top:8px;font-size:12px;color:#5F4A39;font-weight:700;font-family:var(--font-main);text-shadow:0 1px 3px rgba(255,255,255,.6)"></div>
   <button onclick="appLockTryUnlock()" style="margin-top:6px;width:240px;max-width:80vw;background:#7E634E;color:#fff;border:none;border-radius:12px;padding:13px;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 6px 16px rgba(126,99,78,.35);font-family:var(--font-main)">Entrar</button>
 </div>
@@ -9462,7 +9465,7 @@ window._renderUltimaSync = function(){
        bloco de atualização (em Configurações) poder ler o número.
        Nada de escrever o padrão do selo entre aspas em comentário: o script
        leria o exemplo em vez do selo de verdade. Já aconteceu. */
-    var ver='v28/09-c45';
+    var ver='v29/09-c46';
     window.APP_VERSAO = ver;
     var els=document.querySelectorAll('.ultima-sync'); if(!els.length) return;
     var t=parseFloat(localStorage.getItem('sp_ultimaSync')||'0');
@@ -9690,16 +9693,33 @@ async function removerSenhaApp(){
         && window.FB && (window.FB.pronto || typeof firebase !== 'undefined');
   }
 
+  /* Qual conta vai entrar. Na ordem: o que está escrito no campo, o último
+     e-mail que funcionou neste aparelho, e por fim a conta antiga do app —
+     esta última para quem ainda não digitou e-mail nenhum continuar entrando
+     como sempre, sem perceber a mudança.            (Claude 29/09/2026) */
+  function _emailDoLogin(){
+    var c = document.getElementById('app-lock-email');
+    var digitado = (c && c.value || '').trim();
+    if(digitado) return digitado;
+    var guardado = '';
+    try{ guardado = (localStorage.getItem('sp_fb_email') || '').trim(); }catch(e){}
+    if(guardado) return guardado;
+    return (typeof window.FB_EMAIL === 'string') ? window.FB_EMAIL : '';
+  }
+  window._emailDoLogin = _emailDoLogin;
+
   window.appLockTryUnlock = async function(){
     var inp=document.getElementById('app-lock-input');
     var val=(inp && inp.value || '').trim();
     if(!val){ _erro('Digite a senha.'); return; }
+    var email = _emailDoLogin();
 
     // 1) Firebase primeiro (é ele que libera a sincronização)
     if(_temFirebase()){
       _aviso('Entrando...');
-      var r = await window.fbEntrar(val);
+      var r = await window.fbEntrar(email, val);
       if(r.ok){
+        try{ localStorage.setItem('sp_fb_email', email); }catch(e){}
         _fechar();
         // guarda a mesma senha como reserva offline
         try{
@@ -9712,7 +9732,7 @@ async function removerSenhaApp(){
         setTimeout(function(){ if(typeof fbEnviar==='function') fbEnviar(); }, 1500);
         return;
       }
-      if(r.motivo==='senha'){ _erro('Senha incorreta.'); return; }
+      if(r.motivo==='senha'){ _erro('E-mail ou senha incorretos.'); return; }
       // sem internet: se ainda não existe senha local, não dá pra conferir nada.
       // Melhor deixar entrar offline do que trancar a Laura pra fora do próprio app.
       if(!localStorage.getItem('sp_app_lock')){
@@ -9733,12 +9753,25 @@ async function removerSenhaApp(){
   window.appLockInit = function(){
     if(typeof _initOrig==='function') _initOrig();
 
+    /* o e-mail que funcionou da última vez já vem preenchido: ela digita
+       só a senha. Aparelho novo abre com o campo vazio. */
+    var ce=document.getElementById('app-lock-email');
+    if(ce && !ce.value){
+      try{ ce.value = localStorage.getItem('sp_fb_email') || ''; }catch(e){}
+    }
+
     var usaFirebase = (typeof window.fbConfigurado==='function' && window.fbConfigurado());
     if(usaFirebase){
       var ov=document.getElementById('app-lock');
       if(ov && ov.style.display!=='flex'){
         ov.style.display='flex';
-        setTimeout(function(){ var i=document.getElementById('app-lock-input'); if(i) i.focus(); },200);
+        setTimeout(function(){
+          /* com o e-mail já preenchido, o cursor vai direto para a senha */
+          var campo = (ce && ce.value)
+            ? document.getElementById('app-lock-input')
+            : (ce || document.getElementById('app-lock-input'));
+          if(campo) campo.focus();
+        },200);
       }
       _aviso('Verificando...');
     }
@@ -10023,6 +10056,11 @@ var FB_CONFIG = {
 /* E-mail cadastrado no Firebase Auth para a Laura entrar.
    A SENHA não fica aqui — ela digita na tela de bloqueio. */
 var FB_EMAIL = "app.soumparabens@gmail.com";
+/* Este bloco é fechado (roda dentro de uma função), então quem está fora não
+   enxerga o FB_EMAIL. A tela de entrada precisa dele para saber qual conta
+   usar quando o campo de e-mail está vazio — aparelho que ainda não digitou
+   e-mail nenhum entra como sempre.                  (Claude 29/09/2026) */
+window.FB_EMAIL = FB_EMAIL;
 
 /* Onde os dados ficam guardados no Firestore. Não precisa mexer. */
 var FB_COLECAO = "soumparabens";
@@ -10079,10 +10117,15 @@ function fbIniciar(){
 }
 
 /* ── login ──────────────────────────────────────────────────── */
-function fbEntrar(senha){
+/* Desde 29/09/2026 entra por e-mail + senha, cada pessoa com a sua conta.
+   A chamada antiga fbEntrar(senha) continua valendo e usa a conta única de
+   antes — é o que faz o aparelho que ainda não atualizou continuar entrando. */
+function fbEntrar(email, senha){
+  if (arguments.length === 1) { senha = email; email = FB_EMAIL; }
+  email = String(email || FB_EMAIL || '').trim();
   return new Promise(function(resolve){
     if (!fbIniciar()) { resolve({ ok:false, motivo:'sem-firebase' }); return; }
-    FB.auth.signInWithEmailAndPassword(FB_EMAIL, senha)
+    FB.auth.signInWithEmailAndPassword(email, senha)
       .then(function(){ FB.logado = true; fbLigarEscuta(); resolve({ ok:true }); })
       .catch(function(err){
         var c = (err && err.code) || '';
